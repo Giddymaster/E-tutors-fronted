@@ -1,86 +1,221 @@
 import React, { useState } from 'react'
-import { Container, TextField, Button, Typography, Box, Alert, Divider } from '@mui/material'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import AuthFooter from '../components/AuthFooter'
+import { Container, Typography, Box, Button, Paper, TextField, Grid } from '@mui/material'
+import { Link, useNavigate } from 'react-router-dom'
+import Testimonials from '../components/Testimonials'
 
-export default function Register() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [role, setRole] = useState('STUDENT')
-  const [errors, setErrors] = useState<{ [k: string]: string | null }>({ name: null, email: null, password: null })
-  const [serverError, setServerError] = useState<string | null>(null)
+// const SUBJECTS = ['Math', 'Physics', 'Chemistry', 'English', 'Biology', 'Computer Science', 'Economics']
+
+export default function Home() {
+  const [query, setQuery] = useState('')
+  const [location, setLocation] = useState('')
+  const [selectedSubject, setSelectedSubject] = useState(null)
   const navigate = useNavigate()
-  const { register } = useAuth()
-  const location = useLocation()
 
-  React.useEffect(() => {
-    const params = new URLSearchParams(location.search)
-    const r = params.get('role')
-    if (r) setRole(r.toUpperCase())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const validate = () => {
-    const e: any = { name: null, email: null, password: null }
-    if (!name.trim()) e.name = 'Name is required'
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) e.email = 'Valid email is required'
-    if (!password) e.password = 'Password is required'
-    else if (password.length < 8 || password.length > 15) e.password = 'Password must be 8-15 characters long'
-    else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(password)) e.password = 'Password must include uppercase, lowercase, and a number'
-    setErrors(e)
-    return !Object.values(e).some(Boolean)
-  }
-
-  const submit = async () => {
-    setServerError(null)
-    if (!validate()) return
-    try {
-      await register(name, email, password, role as any)
-      navigate('/')
-    } catch (err) {
-      console.error(err)
-      // @ts-ignore
-      if ((err as any) && (err as any).validation) {
-        const first = (err as any).validation[0]
-        if (first && first.param) setErrors((s) => ({ ...s, [first.param]: first.msg }))
-        else setServerError((err as any).validation.map((v: any) => v.msg).join('\n'))
-      } else {
-        setServerError((err as any)?.message || 'Registration failed')
-      }
-    }
+  const doSearch = () => {
+    const params = new URLSearchParams()
+    if (selectedSubject) params.set('subject', selectedSubject)
+    if (query) params.set('q', query)
+    if (location) params.set('location', location)
+    navigate(`/tutors?${params.toString()}`)
   }
 
   return (
-    <Container sx={{ mt: 6 }} maxWidth="xs">
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">Sign Up</Typography>
-        <Typography variant="body2" color="text.secondary">Already have an account? <Button onClick={() => navigate('/login')}>Log in</Button></Typography>
+    <>
+      {/* ✅ Hero Section with clear background image */}
+      <Box
+        sx={{
+          position: 'relative',
+          pb: 10,
+          backgroundImage:
+            'url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwzKEaVaKLO2XlD7yUFTAGHPS5uZ8HXo3XFA&s")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#169b73ff',
+        }}
+      >
+        <Container sx={{ textAlign: 'center', zIndex: 2 }}>
+          {/* ✅ Marquee title (black, 30s, left → right) */}
+          <Box
+            sx={{
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              mb: 4,
+            }}
+          >
+            <Typography
+              variant="h2"
+              sx={{
+                display: 'inline-block',
+                fontWeight: 900,
+                color: '#000000', // Black color
+                letterSpacing: '-0.02em',
+                textShadow: '2px 2px 6px rgba(255,255,255,0.4)',
+                animation: 'marquee 30s linear infinite',
+                '@keyframes marquee': {
+                  '0%': { transform: 'translateX(-100%)' },
+                  '100%': { transform: 'translateX(100%)' },
+                },
+                '&:hover': { animationPlayState: 'paused' },
+              }}
+            >
+              Find the right tutor for your goals
+            </Typography>
+          </Box>
+
+          {/* ✅ Subtitle (static text now) */}
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 4,
+              color: '#ffffff',
+              textShadow: '1px 1px 4px rgba(0,0,0,0.5)',
+            }}
+          >
+            Personalized lessons, verified tutors, and transparent hourly rates. Get the help you
+            need — online or in person.
+          </Typography>
+
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Paper
+              elevation={6}
+              sx={{
+                p: { xs: 2, md: 3 },
+                display: 'flex',
+                gap: 2,
+                alignItems: 'center',
+                width: '100%',
+                maxWidth: 980,
+                borderRadius: 3,
+                backdropFilter: 'blur(8px)',
+                backgroundColor: 'rgba(255,255,255,0.15)',
+              }}
+            >
+              <TextField
+                placeholder="Subject or skill (e.g. Calculus)"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                sx={{ flex: 1, input: { color: '#fff' } }}
+                InputLabelProps={{ style: { color: '#fff' } }}
+                size="medium"
+              />
+              <TextField
+                placeholder="Location (optional)"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                sx={{ width: 240, input: { color: '#fff' } }}
+                InputLabelProps={{ style: { color: '#fff' } }}
+                size="medium"
+              />
+              <Button
+                variant="contained"
+                size="large"
+                onClick={doSearch}
+                sx={{
+                  px: 4,
+                  background: 'linear-gradient(90deg,#2b7cff,#1a5ed8)',
+                  color: '#fff',
+                }}
+              >
+                Search tutors
+              </Button>
+            </Paper>
+          </Box>
+
+          <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              component={Link}
+              to="/tutors"
+              size="large"
+              sx={{
+                px: 4,
+                background: 'linear-gradient(90deg,#2b7cff,#1a5ed8)',
+                color: '#fff',
+              }}
+            >
+              Find a tutor
+            </Button>
+            <Button
+              variant="outlined"
+              component={Link}
+              to="/register"
+              sx={{ color: '#fff', borderColor: '#fff' }}
+            >
+              Sign up
+            </Button>
+          </Box>
+        </Container>
       </Box>
 
-      <Box sx={{ display: 'grid', gap: 2 }}>
-        {serverError && <Alert severity="error">{serverError}</Alert>}
+      {/* ✅ “Recommended tutors” section removed */}
 
-  <Button variant="outlined" onClick={() => window.location.href = '/api/auth/google'}>Sign up with Google</Button>
-  <Button variant="outlined" onClick={() => alert('Apple OAuth not configured')}>Sign up with Apple</Button>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Divider sx={{ flex: 1 }} />
-          <Typography variant="body2" color="text.secondary">Or</Typography>
-          <Divider sx={{ flex: 1 }} />
+      <Container sx={{ mt: 8 }}>
+        <Box sx={{ my: 6 }}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={4}>
+              <Typography variant="h6">1. Tell us your goal</Typography>
+              <Typography>
+                Share the subject and what you want to improve — we’ll suggest good matches.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="h6">2. Compare tutors</Typography>
+              <Typography>
+                See hourly rates, ratings, and specialties to pick the right tutor.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="h6">3. Book & learn</Typography>
+              <Typography>
+                Schedule a lesson, review your session, and continue progress with the same tutor.
+              </Typography>
+            </Grid>
+          </Grid>
         </Box>
 
-        <TextField label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={!!errors.name} helperText={errors.name || ''} />
-        <TextField label="Email" value={email} onChange={(e) => setEmail(e.target.value)} error={!!errors.email} helperText={errors.email || ''} />
-        <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} error={!!errors.password} helperText={errors.password || ''} />
-
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="contained" onClick={submit}>Create account</Button>
+        <Box sx={{ textAlign: 'center', my: 6 }}>
+          <Typography variant="h5" gutterBottom>
+            Ready to find a tutor?
+          </Typography>
+          <Button variant="contained" size="large" component={Link} to="/tutors">
+            Find a tutor
+          </Button>
         </Box>
+
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            What students say
+          </Typography>
+          <Testimonials />
+        </Box>
+      </Container>
+
+      <Box component="footer" sx={{ mt: 6, py: 6, backgroundColor: '#f7f9fc' }}>
+        <Container>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6">For students — your learning matters</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Share your goals and areas you'd like help with. We'll recommend vetted tutors and
+                show hourly rates and ratings to help you decide.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+              <Button variant="outlined" component={Link} to="/register?role=TUTOR">
+                Become a tutor
+              </Button>
+              <Typography variant="caption" display="block" sx={{ mt: 2 }}>
+                © {new Date().getFullYear()} Excellent Tutors
+              </Typography>
+            </Grid>
+          </Grid>
+        </Container>
       </Box>
-
-      <AuthFooter />
-    </Container>
+    </>
   )
 }
