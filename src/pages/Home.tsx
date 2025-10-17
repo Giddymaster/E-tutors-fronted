@@ -62,7 +62,7 @@ export default function Home() {
                 '&:hover': { animationPlayState: 'paused' },
               }}
             >
-              Find the right tutor for your goals
+              Find The Right Tutor For Your Goals!
             </Typography>
           </Box>
 

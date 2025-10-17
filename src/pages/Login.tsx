@@ -1,5 +1,14 @@
 import React, { useState } from 'react'
-import { Container, TextField, Button, Typography, Box, Alert, Divider } from '@mui/material'
+import {
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Alert,
+  Divider,
+  Grid,
+} from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AuthFooter from '../components/AuthFooter'
@@ -9,7 +18,10 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
   const { login } = useAuth()
-  const [errors, setErrors] = useState<{ [k: string]: string | null }>({ email: null, password: null })
+  const [errors, setErrors] = useState<{ [k: string]: string | null }>({
+    email: null,
+    password: null,
+  })
   const [serverError, setServerError] = useState<string | null>(null)
 
   const validate = () => {
@@ -39,34 +51,101 @@ export default function Login() {
   }
 
   return (
-    <Container sx={{ mt: 6 }} maxWidth="xs">
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">Log In</Typography>
-        <Typography variant="body2" color="text.secondary">Don’t have an account? <Button onClick={() => navigate('/register')}>Sign up for free.</Button></Typography>
-      </Box>
+    <Grid container sx={{ minHeight: '100vh' }}>
+      {/* ✅ Left side: Login Form */}
+      <Grid
+        item
+        xs={12}
+        md={6}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#fafafa',
+        }}
+      >
+        <Container sx={{ mt: 6 }} maxWidth="xs">
+          <Box sx={{ textAlign: 'center', mb: 3 }}>
+            <Typography variant="h4" component="h1">
+              Log In
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Don’t have an account?{' '}
+              <Button onClick={() => navigate('/register')}>Sign up for free.</Button>
+            </Typography>
+          </Box>
 
-      <Box sx={{ display: 'grid', gap: 2 }}>
-        {serverError && <Alert severity="error">{serverError}</Alert>}
+          <Box sx={{ display: 'grid', gap: 2 }}>
+            {serverError && <Alert severity="error">{serverError}</Alert>}
 
-  <Button variant="outlined" onClick={() => window.location.href = '/api/auth/google'}>Log in with Google</Button>
-  <Button variant="outlined" onClick={() => alert('Apple OAuth not configured')}>Log in with Apple</Button>
+            <Button
+              variant="outlined"
+              onClick={() => (window.location.href = '/api/auth/google')}
+            >
+              Log in with Google
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => alert('Apple OAuth not configured')}
+            >
+              Log in with Apple
+            </Button>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Divider sx={{ flex: 1 }} />
-          <Typography variant="body2" color="text.secondary">Or</Typography>
-          <Divider sx={{ flex: 1 }} />
-        </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Divider sx={{ flex: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                Or
+              </Typography>
+              <Divider sx={{ flex: 1 }} />
+            </Box>
 
-        <TextField label="Email" value={email} onChange={(e) => setEmail(e.target.value)} error={!!errors.email} helperText={errors.email || ''} />
-        <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} error={!!errors.password} helperText={errors.password || ''} />
+            <TextField
+              label="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={!!errors.email}
+              helperText={errors.email || ''}
+            />
+            <TextField
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={!!errors.password}
+              helperText={errors.password || ''}
+            />
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Button variant="contained" onClick={submit}>Log in</Button>
-          <Button variant="text">Forgot username or password?</Button>
-        </Box>
-      </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Button variant="contained" onClick={submit}>
+                Log in
+              </Button>
+              <Button variant="text">Forgot username or password?</Button>
+            </Box>
+          </Box>
 
-      <AuthFooter />
-    </Container>
+          <AuthFooter />
+        </Container>
+      </Grid>
+
+      {/* ✅ Right side: Background Image */}
+      <Grid
+        item
+        xs={false}
+        md={6}
+        sx={{
+          backgroundImage:
+            'url("https://images.pexels.com/photos/4050315/pexels-photo-4050315.jpeg")',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+    </Grid>
   )
 }
