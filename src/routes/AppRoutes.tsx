@@ -5,6 +5,10 @@ import Tutors from '../pages/Tutors'
 import TutorProfile from '../pages/TutorProfile'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
+import Terms from '../pages/Terms'
+import Privacy from '../pages/Privacy'
+import BecomeTutor from '../pages/BecomeTutor'
+import OAuthCallback from '../pages/OAuthCallback'
 import StudentDashboard from '../components/StudentDashboard'
 import TutorDashboard from '../components/TutorDashboard'
 import Navbar from '../components/Navbar'
@@ -21,6 +25,10 @@ export default function AppRoutes() {
         <Route path="/tutors/:id" element={<TutorProfile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+  <Route path="/terms" element={<Terms />} />
+  <Route path="/privacy" element={<Privacy />} />
+  <Route path="/become-tutor" element={<BecomeTutor />} />
+  <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route
           path="/student"
           element={<ProtectedRoute requiredRole={'STUDENT'}><StudentDashboard /></ProtectedRoute>}

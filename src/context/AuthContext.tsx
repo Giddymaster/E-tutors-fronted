@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import api from '../utils/api'
+import api, { setAuthToken, getAuthToken, logout as apiLogout } from '../utils/api'
 
 type Role = 'STUDENT' | 'TUTOR' | 'ADMIN'
 
@@ -25,7 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true)
 
   const fetchMe = async () => {
-    const token = localStorage.getItem('token')
+    const token = getAuthToken()
     if (!token) {
       setLoading(false)
       return
@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(res.data.user)
     } catch (err) {
       console.error('fetchMe error', err)
-      localStorage.removeItem('token')
+      apiLogout()
       setUser(null)
     } finally {
       setLoading(false)
@@ -51,19 +51,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     const res = await api.post('/auth/login', { email, password })
     const { token, user } = res.data
-    localStorage.setItem('token', token)
+    setAuthToken(token)
     setUser(user)
   }
 
   const register = async (name: string, email: string, password: string, role: Role = 'STUDENT') => {
-    const res = await api.post('/auth/register', { name, email, password, role })
-    const { token, user } = res.data
-    localStorage.setItem('token', token)
-    setUser(user)
+  const res = await api.post('/auth/register', { name, email, password, role })
+  const { token, user } = res.data
+  setAuthToken(token)
+  setUser(user)
   }
 
   const logout = () => {
-    localStorage.removeItem('token')
+    apiLogout()
     setUser(null)
   }
 
