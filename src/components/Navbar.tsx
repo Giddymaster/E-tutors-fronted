@@ -14,7 +14,7 @@ export default function Navbar() {
   }, [location.pathname])
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ backgroundColor: '#fffbe6', color: '#222' }}>
       <Toolbar>
         <Typography variant="h6" component={Link} to="/" sx={{ color: 'inherit', textDecoration: 'none', flexGrow: 1 }}>
           Excellent Tutors

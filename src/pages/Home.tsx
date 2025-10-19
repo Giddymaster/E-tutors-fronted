@@ -27,7 +27,7 @@ export default function Home() {
           position: 'relative',
           pb: 10,
           backgroundImage:
-            'url("https://blogs.unb.ca/newsroom/_media/images/2017/01/e1574fb983ca061524d768e5b0285556history_class-2.jpg")',
+            'url("https://images.pexels.com/photos/3771074/pexels-photo-3771074.jpeg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
