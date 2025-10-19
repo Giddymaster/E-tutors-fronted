@@ -16,7 +16,7 @@ export default function Home() {
     if (selectedSubject) params.set('subject', selectedSubject)
     if (query) params.set('q', query)
     if (location) params.set('location', location)
-    navigate(`/tutors?${params.toString()}`)
+    navigate(`/login?${params.toString()}`)
   }
 
   return (
@@ -92,15 +92,15 @@ export default function Home() {
                 maxWidth: 980,
                 borderRadius: 3,
                 backdropFilter: 'blur(8px)',
-                backgroundColor: 'rgba(255,255,255,0.15)',
+                backgroundColor: 'rgba(17, 158, 177, 0.15)',
               }}
             >
               <TextField
                 placeholder="Subject or skill (e.g. Calculus)"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                sx={{ flex: 1, input: { color: '#fff' } }}
-                InputLabelProps={{ style: { color: '#fff' } }}
+                sx={{ flex: 1, input: { color: '#d41010ce' } }}
+                InputLabelProps={{ style: { color: '#ffffffff' } }}
                 size="medium"
               />
               <TextField
@@ -126,30 +126,7 @@ export default function Home() {
             </Paper>
           </Box>
 
-          {/* ✅ Action Buttons */}
-          <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'center' }}>
-            <Button
-              variant="contained"
-              component={Link}
-              to="/tutors"
-              size="large"
-              sx={{
-                px: 4,
-                background: 'linear-gradient(90deg,#2b7cff,#1a5ed8)',
-                color: '#fff',
-              }}
-            >
-              Find a tutor
-            </Button>
-            <Button
-              variant="outlined"
-              component={Link}
-              to="/register"
-              sx={{ color: '#fff', borderColor: '#fff' }}
-            >
-              Sign up
-            </Button>
-          </Box>
+    
         </Container>
       </Box>
 
@@ -183,7 +160,7 @@ export default function Home() {
           <Typography variant="h5" gutterBottom>
             Ready to find a tutor?
           </Typography>
-          <Button variant="contained" size="large" component={Link} to="/tutors">
+          <Button variant="contained" size="large" component={Link} to="/login">
             Find a tutor
           </Button>
         </Box>
