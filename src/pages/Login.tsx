@@ -9,7 +9,7 @@ import {
   Divider,
   Grid,
 } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AuthFooter from '../components/AuthFooter'
 
@@ -71,7 +71,7 @@ export default function Login() {
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Don’t have an account?{' '}
-              <Button onClick={() => navigate('/register')}>Sign up for free.</Button>
+              <Button component={RouterLink} to="/register">Sign up for free.</Button>
             </Typography>
           </Box>
 

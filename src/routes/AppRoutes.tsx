@@ -29,6 +29,7 @@ export default function AppRoutes() {
   <Route path="/privacy" element={<Privacy />} />
   <Route path="/become-tutor" element={<BecomeTutor />} />
   <Route path="/oauth/callback" element={<OAuthCallback />} />
+  
         <Route
           path="/student"
           element={<ProtectedRoute requiredRole={'STUDENT'}><StudentDashboard /></ProtectedRoute>}

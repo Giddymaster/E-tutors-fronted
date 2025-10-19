@@ -197,7 +197,7 @@ export default function Home() {
       </Container>
 
       {/* ✅ Footer */}
-      <Box component="footer" sx={{ mt: 6, py: 6, backgroundColor: '#f7f9fc' }}>
+      <Box component="footer" sx={{ mt: 6, py: 6, backgroundColor: '#dbdfe6ff' }}>
         <Container>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={6}>
