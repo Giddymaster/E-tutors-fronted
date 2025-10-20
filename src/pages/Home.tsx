@@ -7,7 +7,6 @@ import Testimonials from '../components/Testimonials'
 
 export default function Home() {
   const [query, setQuery] = useState('')
-  const [location, setLocation] = useState('')
   const [selectedSubject, setSelectedSubject] = useState(null)
   const navigate = useNavigate()
 
@@ -15,7 +14,6 @@ export default function Home() {
     const params = new URLSearchParams()
     if (selectedSubject) params.set('subject', selectedSubject)
     if (query) params.set('q', query)
-    if (location) params.set('location', location)
     navigate(`/login?${params.toString()}`)
   }
 
@@ -119,19 +117,6 @@ export default function Home() {
                 size="medium"
                 fullWidth
               />
-              <TextField
-                placeholder="Location (optional)"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                sx={{ 
-                  width: { xs: '100%', sm: 240 },
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#f8f8f8'
-                  }
-                }}
-                size="medium"
-                fullWidth
-              />
               <Button
                 variant="contained"
                 size="large"
@@ -165,8 +150,8 @@ export default function Home() {
           }}>
             <Box
               component="img"
-              src="https://images.pexels.com/photos/6929168/pexels-photo-6929168.jpeg"
-              alt="Student writing"
+              src="https://images.pexels.com/photos/3771074/pexels-photo-3771074.jpeg"
+              alt="Strict female teacher at blackboard"
               sx={{
                 width: '100%',
                 height: '100%',

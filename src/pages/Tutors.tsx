@@ -209,7 +209,9 @@ export default function Tutors() {
                         style={{ marginTop: 8 }}
                         onChange={e => setMoreFiles(e.target.files)}
                       />
-                      <Typography variant="caption" color="text.secondary">You can upload more documents here.</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        You can upload as many documents as you want. No minimum required.
+                      </Typography>
                     </FormControl>
                     <Typography variant="subtitle2" sx={{ mb: 1 }}>Resource Links</Typography>
                     {resourceLinks.map((link, idx) => (
