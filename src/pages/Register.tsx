@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FcGoogle } from 'react-icons/fc';
 import { Container, TextField, Button, Typography, Box, Alert, Divider, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -86,6 +87,7 @@ export default function Register() {
         <Button
           variant="outlined"
           fullWidth
+          startIcon={<FcGoogle />}
           onClick={() => (window.location.href = '/api/auth/google')}
         >
           Sign up with Gmail

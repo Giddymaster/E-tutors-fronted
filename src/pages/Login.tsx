@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { FcGoogle } from 'react-icons/fc'
 import {
   Container,
   TextField,
@@ -80,6 +81,7 @@ export default function Login() {
 
             <Button
               variant="outlined"
+              startIcon={<FcGoogle />}
               onClick={() => (window.location.href = '/api/auth/google')}
             >
               Log in with Google
