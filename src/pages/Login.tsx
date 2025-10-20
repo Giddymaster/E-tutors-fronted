@@ -8,8 +8,9 @@ import {
   Box,
   Alert,
   Divider,
-  Grid,
-} from '@mui/material'
+  Grid
+} from '@mui/material';
+import AppleIcon from '@mui/icons-material/Apple';
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AuthFooter from '../components/AuthFooter'
@@ -88,6 +89,7 @@ export default function Login() {
             </Button>
             <Button
               variant="outlined"
+              startIcon={<AppleIcon />}
               onClick={() => alert('Apple OAuth not configured')}
             >
               Log in with Apple

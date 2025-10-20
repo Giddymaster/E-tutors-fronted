@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { Container, TextField, Button, Typography, Box, Alert, Divider, Grid } from '@mui/material';
+import AppleIcon from '@mui/icons-material/Apple';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -91,6 +92,14 @@ export default function Register() {
           onClick={() => (window.location.href = '/api/auth/google')}
         >
           Sign up with Gmail
+        </Button>
+        <Button
+          variant="outlined"
+          fullWidth
+          startIcon={<AppleIcon />}
+          onClick={() => alert('Apple OAuth not configured')}
+        >
+          Sign up with Apple
         </Button>
           </Box>
         </Container>
