@@ -38,8 +38,19 @@ export default function Login() {
     setServerError(null)
     if (!validate()) return
     try {
-      await login(email, password)
-      navigate('/')
+      // assume login returns user info or a result containing role
+      const result = (await login(email, password)) as any
+      // try common shapes: result.role or result.user.role
+      const role = (result && (result.role || (result.user && result.user.role))) || null
+
+      if (role === 'student') {
+        navigate('/student')
+      } else if (role === 'tutor') {
+        navigate('/dashboard')
+      } else {
+        // fallback
+        navigate('/')
+      }
     } catch (err) {
       console.error(err)
       if ((err as any) && (err as any).validation) {
