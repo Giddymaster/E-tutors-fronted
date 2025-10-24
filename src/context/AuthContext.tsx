@@ -53,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { token, user } = res.data
     setAuthToken(token)
     setUser(user)
+    return user
   }
 
   const register = async (name: string, email: string, password: string, role: Role = 'STUDENT') => {
@@ -60,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { token, user } = res.data
   setAuthToken(token)
   setUser(user)
+  return user
   }
 
   const logout = () => {

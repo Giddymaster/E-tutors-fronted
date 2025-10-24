@@ -20,6 +20,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
   const { login } = useAuth()
+  const API_BASE = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'
   const [errors, setErrors] = useState<{ [k: string]: string | null }>({
     email: null,
     password: null,
@@ -94,7 +95,7 @@ export default function Login() {
             <Button
               variant="outlined"
               startIcon={<FcGoogle />}
-              onClick={() => (window.location.href = '/api/auth/google')}
+              onClick={() => (window.location.href = `${API_BASE}/auth/google`)}
             >
               Log in with Google
             </Button>

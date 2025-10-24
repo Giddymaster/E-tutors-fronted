@@ -19,8 +19,8 @@ export default function Navbar() {
         <Typography variant="h6" component={Link} to="/" sx={{ color: 'inherit', textDecoration: 'none', flexGrow: 1 }}>
           Excellent Tutors
         </Typography>
-        {/* center menu (hidden until login/register is clicked) */}
-        <Box sx={{ flex: 1, display: menuOpen ? 'flex' : 'none', justifyContent: 'center', gap: 2 }}>
+        {/* center menu (hidden until login/register is clicked). When logged in, keep visible */}
+        <Box sx={{ flex: 1, display: menuOpen || user ? 'flex' : 'none', justifyContent: 'center', gap: 2 }}>
           <Button color="inherit" component={Link} to="/tutors">Find a Tutor</Button>
           <Button color="inherit" component={Link} to="/become-tutor">Become a Tutor</Button>
           <Button color="inherit" component={Link} to="/about">About Us</Button>

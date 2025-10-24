@@ -1,141 +1,235 @@
-import React, { useState } from 'react';
-import { Container, Typography, Box, TextField, Button, Grid, Divider, FormControlLabel, Checkbox } from '@mui/material';
-import { FcGoogle } from 'react-icons/fc';
-import { FaPaypal } from 'react-icons/fa'; // added PayPal icon
-import AppleIcon from '@mui/icons-material/Apple';
-import PaymentIcon from '@mui/icons-material/Payment';
-import CreditCardIcon from '@mui/icons-material/CreditCard'; // added credit card icon
-import DescriptionIcon from '@mui/icons-material/Description';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import React, { useState } from 'react'
+import {
+  Typography,
+  Box,
+  TextField,
+  Button,
+  Grid,
+  Divider,
+  FormControlLabel,
+  Checkbox,
+} from '@mui/material'
+import { FcGoogle } from 'react-icons/fc'
+import { FaPaypal } from 'react-icons/fa'
+import AppleIcon from '@mui/icons-material/Apple'
+import PaymentIcon from '@mui/icons-material/Payment'
+import CreditCardIcon from '@mui/icons-material/CreditCard'
+import DescriptionIcon from '@mui/icons-material/Description'
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
+import { useAuth } from '../context/AuthContext'
+import api from '../utils/api'
+import { useNavigate } from 'react-router-dom'
 
 export default function BecomeTutor() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [gmail, setGmail] = useState('');
-  const [age, setAge] = useState('');
-  const [location, setLocation] = useState('');
-  const [phone, setPhone] = useState('');
-  const [ssn, setSSN] = useState('');
-  const [specialization, setSpecialization] = useState('');
-  const [password, setPassword] = useState('');
-  const [bio, setBio] = useState('');
-  const [backgroundCheck, setBackgroundCheck] = useState(false);
-  const [backgroundPaid, setBackgroundPaid] = useState(false);
-  const [error, setError] = useState('');
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [age, setAge] = useState('')
+  const [location, setLocation] = useState('')
+  const [phone, setPhone] = useState('')
+  const [ssn, setSSN] = useState('')
+  const [specialization, setSpecialization] = useState('')
+  const [password, setPassword] = useState('')
+  const [bio, setBio] = useState('')
+  const [backgroundCheck, setBackgroundCheck] = useState(false)
+  const [backgroundPaid, setBackgroundPaid] = useState(false)
+  const [error, setError] = useState('')
+  const [errors, setErrors] = useState<{ [k: string]: string | null }>({
+    firstName: null,
+    lastName: null,
+    email: null,
+    age: null,
+    location: null,
+    phone: null,
+    ssn: null,
+    specialization: null,
+    password: null,
+    bio: null,
+  })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // required fields
-    if (!firstName || !lastName || !gmail || !age || !location || !phone || !ssn || !specialization || !password || !bio) {
-      setError('Please fill in all fields.');
-      return;
+  const validate = () => {
+    const e: any = {
+      firstName: null,
+      lastName: null,
+      email: null,
+      age: null,
+      location: null,
+      phone: null,
+      ssn: null,
+      specialization: null,
+      password: null,
+      bio: null,
     }
 
-    // count words for bio
-    const wordCount = bio.trim().split(/\s+/).filter(Boolean).length;
-    if (wordCount < 150) {
-      setError('Bio must be at least 150 words.');
-      return;
-    }
+    if (!firstName) e.firstName = 'First name is required'
+    if (!lastName) e.lastName = 'Last name is required'
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) e.email = 'Valid email is required'
 
-    // require payment if background check selected
-    if (backgroundCheck && !backgroundPaid) {
-      setError('Please complete the $10 background check payment.');
-      return;
-    }
+    const ageNum = Number(age)
+    if (!age || isNaN(ageNum) || ageNum < 18 || ageNum > 120) e.age = 'Enter a valid age (18-120)'
 
-    setError('');
-    // Simulate successful registration
-    alert('Tutor signup submitted!');
-    // Clear form
-    setFirstName('');
-    setLastName('');
-    setGmail('');
-    setAge('');
-    setLocation('');
-    setPhone('');
-    setSSN('');
-    setSpecialization('');
-    setPassword('');
-    setBio('');
-    setBackgroundCheck(false);
-    setBackgroundPaid(false);
-  };
+    if (!location) e.location = 'Location is required'
+    if (!phone || phone.length < 7) e.phone = 'Enter a valid phone number'
+    if (!ssn || ssn.length < 4) e.ssn = 'Enter a valid SSN'
+    if (!specialization) e.specialization = 'Specialization is required'
+    if (!password || password.length < 8) e.password = 'Password must be at least 8 characters'
+
+    const wordCount = bio.trim().split(/\s+/).filter(Boolean).length
+    if (wordCount < 150) e.bio = 'Bio must be at least 150 words'
+
+    setErrors(e)
+    return !Object.values(e).some(Boolean)
+  }
 
   const handlePay = (method: 'paypal' | 'card') => {
-    // In real app: open/pay via SDK or redirect to backend checkout.
-    // Here we simulate payment success.
+    // simulate payment success
     if (method === 'paypal') {
-      // simulate redirect to PayPal or popup
-      alert('Redirecting to PayPal (simulated). Payment of $10 completed.');
+      alert('Simulated PayPal payment complete ($10)')
     } else {
-      alert('Opening credit card payment (simulated). Payment of $10 completed.');
+      alert('Simulated card payment complete ($10)')
     }
-    setBackgroundPaid(true);
-    setError('');
-  };
+    setBackgroundPaid(true)
+    setError('')
+  }
+
+  const navigate = useNavigate()
+  const { user, register } = useAuth()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    if (!validate()) return
+    if (backgroundCheck && !backgroundPaid) {
+      setError('Please complete the $10 background check payment.')
+      return
+    }
+
+    try {
+      // If not logged in, register first and set role to TUTOR
+      if (!user) {
+        const name = `${firstName.trim()} ${lastName.trim()}`.trim()
+        await register(name, email, password, 'TUTOR')
+      }
+
+      // Create tutor profile
+      const body = {
+        bio,
+        subjects: specialization ? [specialization] : [],
+        hourlyRate: 0,
+        availability: location,
+      }
+
+      const res = await api.post('/tutors', body)
+      if (res && res.data && res.data.tutor) {
+        // success: navigate to tutor area
+        navigate('/tutor')
+      }
+    } catch (err: any) {
+      console.error('Become tutor error', err)
+      setError(err?.message || (err?.response?.data?.error ?? 'Failed to create tutor profile'))
+    }
+  }
 
   return (
-    <Container maxWidth="lg" sx={{ pt: 4, pb: 8 }}>
-      <Grid container spacing={4}>
+    <Box sx={{ minHeight: '100vh' }}>
+      <Grid container spacing={0}>
         {/* Left side - Image */}
-        <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', mt: 2 }}>
+        <Grid item xs={12} md={6} sx={{ p: 0 }}>
           <Box
             component="img"
             src="https://images.pexels.com/photos/4861395/pexels-photo-4861395.jpeg"
             alt="Tutor"
             sx={{
               width: '100%',
-              maxWidth: '500px',
-              height: 'auto',
-              borderRadius: 2,
-              boxShadow: 3,
-              mt: { xs: 2, md: 0 },
+              height: { xs: '40vh', md: '100vh' },
+              objectFit: 'cover',
+              display: 'block',
             }}
           />
         </Grid>
 
-        {/* Right side - Form */}
-        <Grid item xs={12} md={6}>
-          <Box sx={{ maxWidth: '500px', margin: '0 auto' }}>
+        {/* Right side - Form (scrollable within viewport) */}
+        <Grid item xs={12} md={6} sx={{ p: { xs: 3, md: 6 }, display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ width: '100%', maxWidth: 720, maxHeight: '100vh', overflowY: 'auto' }}>
             <Typography variant="h4" align="center" gutterBottom>
               Become a Tutor
             </Typography>
             <Typography align="center" color="text.secondary" sx={{ mb: 4 }}>
               Sign up to join Excellent Tutors and help students achieve their goals.
             </Typography>
+
             <Box component="form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2 }}>
               {error && <Typography color="error">{error}</Typography>}
-              
-              <TextField label="Gmail" type="email" value={gmail} onChange={e => setGmail(e.target.value)} fullWidth />
-              <TextField label="Age" type="number" value={age} onChange={e => setAge(e.target.value)} fullWidth />
-              <TextField label="Location" value={location} onChange={e => setLocation(e.target.value)} fullWidth />
-              <TextField label="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} fullWidth />
-              <TextField label="SSN" value={ssn} onChange={e => setSSN(e.target.value)} fullWidth />
-              <TextField label="Specialization" value={specialization} onChange={e => setSpecialization(e.target.value)} fullWidth />
-              <TextField label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} fullWidth />
+
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} fullWidth error={!!errors.firstName} helperText={errors.firstName || ''} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} fullWidth error={!!errors.lastName} helperText={errors.lastName || ''} />
+                </Grid>
+              </Grid>
+
+              <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth error={!!errors.email} helperText={errors.email || ''} />
+
+              <TextField
+                label="Age"
+                type="number"
+                inputProps={{ min: 18, max: 120 }}
+                value={age}
+                onChange={(e) => setAge(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+                fullWidth
+                error={!!errors.age}
+                helperText={errors.age || ''}
+              />
+
+              <TextField label="Location" value={location} onChange={(e) => setLocation(e.target.value)} fullWidth error={!!errors.location} helperText={errors.location || ''} />
+
+              <TextField
+                label="Phone Number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 15))}
+                fullWidth
+                inputProps={{ inputMode: 'numeric', maxLength: 15 }}
+                error={!!errors.phone}
+                helperText={errors.phone || ''}
+              />
+
+              <TextField
+                label="SSN/ID"
+                value={ssn}
+                onChange={(e) => setSSN(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                fullWidth
+                inputProps={{ inputMode: 'numeric', maxLength: 11 }}
+                error={!!errors.ssn}
+                helperText={errors.ssn || ''}
+              />
+
+              <TextField label="Specialization" value={specialization} onChange={(e) => setSpecialization(e.target.value)} fullWidth error={!!errors.specialization} helperText={errors.specialization || ''} />
+
+              <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} fullWidth error={!!errors.password} helperText={errors.password || ''} />
+
               <TextField
                 label="Bio"
                 multiline
                 rows={6}
                 value={bio}
-                onChange={e => setBio(e.target.value)}
+                onChange={(e) => setBio(e.target.value)}
                 fullWidth
-                InputProps={{
-                  startAdornment: <DescriptionIcon color="action" sx={{ mr: 1 }} />,
-                }}
-                helperText="Minimum 150 words"
+                InputProps={{ startAdornment: <DescriptionIcon color="action" sx={{ mr: 1 }} /> }}
+                helperText={errors.bio || 'Minimum 150 words'}
+                error={!!errors.bio}
               />
+
               <FormControlLabel
                 control={
                   <Checkbox
                     checked={backgroundCheck}
-                    onChange={e => {
-                      setBackgroundCheck(e.target.checked);
+                    onChange={(e) => {
+                      setBackgroundCheck(e.target.checked)
                       if (!e.target.checked) {
-                        setBackgroundPaid(false);
-                        setError('');
+                        setBackgroundPaid(false)
+                        setError('')
                       }
                     }}
                     icon={<VerifiedUserIcon />}
@@ -153,31 +247,19 @@ export default function BecomeTutor() {
                 }
               />
 
-              {/* show payment options (with icons) when background check is selected */}
               {backgroundCheck && (
                 <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
-                  <Typography variant="subtitle1" sx={{ mb: 1 }}>Complete $10 background check - choose payment method</Typography>
+                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                    Complete $10 background check - choose payment method
+                  </Typography>
                   <Grid container spacing={1}>
                     <Grid item xs={12} sm={6}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<FaPaypal />}
-                        fullWidth
-                        onClick={() => handlePay('paypal')}
-                        disabled={backgroundPaid}
-                      >
+                      <Button variant="contained" color="primary" startIcon={<FaPaypal />} fullWidth onClick={() => handlePay('paypal')} disabled={backgroundPaid}>
                         Pay with PayPal
                       </Button>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <Button
-                        variant="outlined"
-                        startIcon={<CreditCardIcon />}
-                        fullWidth
-                        onClick={() => handlePay('card')}
-                        disabled={backgroundPaid}
-                      >
+                      <Button variant="outlined" startIcon={<CreditCardIcon />} fullWidth onClick={() => handlePay('card')} disabled={backgroundPaid}>
                         Pay with Card
                       </Button>
                     </Grid>
@@ -196,30 +278,22 @@ export default function BecomeTutor() {
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
                 <Divider sx={{ flex: 1 }} />
-                <Typography variant="body2" color="text.secondary">or</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  or
+                </Typography>
                 <Divider sx={{ flex: 1 }} />
               </Box>
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<FcGoogle />}
-                onClick={() => window.location.href = '/api/auth/google'}
-                sx={{ mb: 1 }}
-              >
+
+              <Button variant="outlined" fullWidth startIcon={<FcGoogle />} onClick={() => (window.location.href = `${(import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'}/auth/google`)} sx={{ mb: 1 }}>
                 Sign up with Gmail
               </Button>
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<AppleIcon />}
-                onClick={() => alert('Apple OAuth not configured')}
-              >
+              <Button variant="outlined" fullWidth startIcon={<AppleIcon />} onClick={() => alert('Apple OAuth not configured')}>
                 Sign up with Apple
               </Button>
             </Box>
           </Box>
         </Grid>
       </Grid>
-    </Container>
-  );
+    </Box>
+  )
 }

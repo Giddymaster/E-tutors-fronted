@@ -1,20 +1,71 @@
 import React, { useState } from 'react'
-import { Container, Typography, Box, Button, Paper, TextField, Grid } from '@mui/material'
+import { Container, Typography, Box, Button, Paper, TextField, Grid, CircularProgress, Alert } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
 import Testimonials from '../components/Testimonials'
+import TutorCard from '../components/TutorCard'
+import { useAuth } from '../context/AuthContext'
+import api from '../utils/api'
 
 // const SUBJECTS = ['Math', 'Physics', 'Chemistry', 'English', 'Biology', 'Computer Science', 'Economics']
 
 export default function Home() {
   const [query, setQuery] = useState('')
   const [selectedSubject, setSelectedSubject] = useState(null)
+  const [results, setResults] = useState<any[]>([])
+  const [loadingResults, setLoadingResults] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
+  const [inputError, setInputError] = useState<string | null>(null)
   const navigate = useNavigate()
+  const { user } = useAuth()
 
-  const doSearch = () => {
-    const params = new URLSearchParams()
-    if (selectedSubject) params.set('subject', selectedSubject)
-    if (query) params.set('q', query)
-    navigate(`/login?${params.toString()}`)
+  const doSearch = async () => {
+    // Validate input: require subject/query
+    setInputError(null)
+    setSearchError(null)
+    const qTrim = query.trim()
+    if (!qTrim) {
+      setInputError('Please enter a subject or skill')
+      return
+    }
+
+    // If user not logged in, redirect to login with the desired query as params
+    if (!user) {
+      const params = new URLSearchParams()
+      if (selectedSubject) params.set('subject', String(selectedSubject))
+      params.set('q', qTrim)
+      navigate(`/login?${params.toString()}`)
+      return
+    }
+
+    // Logged in: fetch tutors and filter client-side
+    setLoadingResults(true)
+    setSearchError(null)
+    try {
+      const res = await api.get('/tutors')
+      const tutors = res.data.tutors || []
+
+  const q = qTrim.toLowerCase()
+      const filtered = tutors.filter((t: any) => {
+        // name from included user object
+        const name = (t.user && t.user.name) || t.name || ''
+        const bio = t.bio || ''
+        const subjects: string[] = Array.isArray(t.subjects) ? t.subjects : (t.subjects || [])
+
+        const matchesQuery = !q || name.toLowerCase().includes(q) || bio.toLowerCase().includes(q) || subjects.join(' ').toLowerCase().includes(q)
+        const matchesSubject = !selectedSubject || subjects.map(s => s.toLowerCase()).includes(String(selectedSubject).toLowerCase())
+        return matchesQuery && matchesSubject
+      })
+
+      // map to shape expected by TutorCard (tutor.name, tutor.bio, tutor.id)
+      const shaped = filtered.map((t: any) => ({ id: t.id, name: (t.user && t.user.name) || t.name, bio: t.bio || '', raw: t }))
+      setResults(shaped)
+    } catch (err: any) {
+      console.error('Search error', err)
+      // show API errors inline on the input like the validation message
+      setInputError(err?.message || 'Failed to fetch tutors')
+    } finally {
+      setLoadingResults(false)
+    }
   }
 
   return (
@@ -28,7 +79,7 @@ export default function Home() {
             alignItems: 'center', 
             justifyContent: 'center',
             p: { xs: 3, md: 6 },
-            backgroundColor: '#ffffff',
+            backgroundColor: '#f1dbb9ff',
             position: 'relative',
             zIndex: 1,
             boxShadow: { md: '4px 0 15px rgba(0, 0, 0, 0.1)' }
@@ -107,11 +158,16 @@ export default function Home() {
               <TextField
                 placeholder="Subject or skill (e.g. Calculus)"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  if (inputError) setInputError(null)
+                }}
+                error={!!inputError}
+                helperText={inputError || ''}
                 sx={{ 
                   flex: 1,
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#f8f8f8'
+                    backgroundColor: '#f8f8f8ff'
                   }
                 }}
                 size="medium"
@@ -133,7 +189,7 @@ export default function Home() {
                   }
                 }}
               >
-                Search tutors
+                Search tutor
               </Button>
             </Paper>
           </Box>
@@ -156,6 +212,8 @@ export default function Home() {
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
+                objectPosition: '75% center',
+                transformOrigin: 'right center',
                 position: 'absolute',
                 top: 0,
                 right: 0,
@@ -168,6 +226,32 @@ export default function Home() {
           </Grid>
         </Grid>
       </Box>
+
+      {/* ✅ Search results (visible when logged in) */}
+      <Container sx={{ mt: 4 }}>
+        {loadingResults && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+            <CircularProgress />
+          </Box>
+        )}
+
+        {/* API errors are shown inline on the search input via helperText */}
+
+        {!loadingResults && results && results.length > 0 && (
+          <Box sx={{ my: 4 }}>
+            <Typography variant="h5" gutterBottom>
+              Search results
+            </Typography>
+            <Grid container spacing={2}>
+              {results.map((t) => (
+                <Grid item xs={12} sm={6} md={4} key={t.id}>
+                  <TutorCard tutor={t} />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
+      </Container>
 
       {/* ✅ Recommended Tutors Section Removed */}
 

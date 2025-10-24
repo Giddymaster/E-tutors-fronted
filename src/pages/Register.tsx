@@ -3,6 +3,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { Container, TextField, Button, Typography, Box, Alert, Divider, Grid } from '@mui/material';
 import AppleIcon from '@mui/icons-material/Apple';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'
 
 
 export default function Register() {
@@ -13,18 +14,53 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { register } = useAuth()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [errors, setErrors] = useState<{ [k: string]: string | null }>({
+    firstName: null,
+    lastName: null,
+    phone: null,
+    email: null,
+    password: null,
+  })
+  const [serverError, setServerError] = useState<string | null>(null)
+
+  const validate = () => {
+    const e: any = { firstName: null, lastName: null, phone: null, email: null, password: null }
+    if (!firstName) e.firstName = 'First name is required'
+    if (!lastName) e.lastName = 'Last name is required'
+    if (!phone) e.phone = 'Phone is required'
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) e.email = 'Valid email is required'
+    if (!password) e.password = 'Password is required'
+    // Note: server enforces stronger password rules (8-15 chars, upper/lower/number)
+    setErrors(e)
+    return !Object.values(e).some(Boolean)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add your registration logic here
-    if (!firstName || !lastName || !phone || !email || !password) {
-      setError('Please fill in all fields.');
-      return;
+    setServerError(null)
+    if (!validate()) return
+
+    try {
+      const name = `${firstName.trim()} ${lastName.trim()}`
+      const user = await register(name, email, password)
+      // register returns the user (AuthContext sets token and user)
+      const role = (user && (user.role)) || null
+      if (role === 'STUDENT') navigate('/student')
+      else if (role === 'TUTOR') navigate('/dashboard')
+      else navigate('/login')
+    } catch (err) {
+      console.error(err)
+      if ((err as any) && (err as any).validation) {
+        const first = (err as any).validation[0]
+        if (first && first.param) setErrors((s) => ({ ...s, [first.param]: first.msg }))
+        else setServerError((err as any).validation.map((v: any) => v.msg).join('\n'))
+      } else {
+        setServerError((err as any)?.message || 'Registration failed')
+      }
     }
-    setError('');
-    // Simulate successful registration
-    navigate('/login');
-  };
+  }
 
   return (
     <Grid container sx={{ minHeight: '100vh' }}>
@@ -85,11 +121,11 @@ export default function Register() {
           <Typography variant="body2" color="text.secondary">or</Typography>
           <Divider sx={{ flex: 1 }} />
         </Box>
-        <Button
+            <Button
           variant="outlined"
           fullWidth
           startIcon={<FcGoogle />}
-          onClick={() => (window.location.href = '/api/auth/google')}
+          onClick={() => (window.location.href = `${(import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'}/auth/google`)}
         >
           Sign up with Gmail
         </Button>
