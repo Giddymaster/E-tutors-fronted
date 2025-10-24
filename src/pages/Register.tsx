@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { Container, TextField, Button, Typography, Box, Alert, Divider, Grid } from '@mui/material';
 import AppleIcon from '@mui/icons-material/Apple';
@@ -15,6 +15,22 @@ export default function Register() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { register } = useAuth()
+
+  // refs to allow focusing the first invalid field
+  const firstNameRef = useRef<HTMLInputElement | null>(null)
+  const lastNameRef = useRef<HTMLInputElement | null>(null)
+  const phoneRef = useRef<HTMLInputElement | null>(null)
+  const emailRef = useRef<HTMLInputElement | null>(null)
+  const passwordRef = useRef<HTMLInputElement | null>(null)
+
+  const focusField = (key: string | null) => {
+    if (!key) return
+    if (key === 'firstName') firstNameRef.current?.focus()
+    else if (key === 'lastName') lastNameRef.current?.focus()
+    else if (key === 'phone') phoneRef.current?.focus()
+    else if (key === 'email') emailRef.current?.focus()
+    else if (key === 'password') passwordRef.current?.focus()
+  }
 
   const [errors, setErrors] = useState<{ [k: string]: string | null }>({
     firstName: null,
@@ -34,6 +50,10 @@ export default function Register() {
     if (!password) e.password = 'Password is required'
     // Note: server enforces stronger password rules (8-15 chars, upper/lower/number)
     setErrors(e)
+    // focus first invalid field
+    const order = ['firstName', 'lastName', 'phone', 'email', 'password']
+    const firstInvalid = order.find((k) => !!e[k]) || null
+    if (firstInvalid) focusField(firstInvalid)
     return !Object.values(e).some(Boolean)
   }
 
@@ -46,7 +66,7 @@ export default function Register() {
       const name = `${firstName.trim()} ${lastName.trim()}`
       const user = await register(name, email, password)
       // register returns the user (AuthContext sets token and user)
-      const role = (user && (user.role)) || null
+  const role = (user as any)?.role || null
       if (role === 'STUDENT') navigate('/student')
       else if (role === 'TUTOR') navigate('/dashboard')
       else navigate('/login')
@@ -75,12 +95,16 @@ export default function Register() {
           </Typography>
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2 }}>
         {error && <Alert severity="error">{error}</Alert>}
+        {serverError && <Alert severity="error">{serverError}</Alert>}
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
               label="First Name"
               value={firstName}
               onChange={e => setFirstName(e.target.value)}
+              inputRef={firstNameRef}
+              error={!!errors.firstName}
+              helperText={errors.firstName || ''}
               fullWidth
             />
           </Grid>
@@ -89,6 +113,9 @@ export default function Register() {
               label="Last Name"
               value={lastName}
               onChange={e => setLastName(e.target.value)}
+              inputRef={lastNameRef}
+              error={!!errors.lastName}
+              helperText={errors.lastName || ''}
               fullWidth
             />
           </Grid>
@@ -97,6 +124,9 @@ export default function Register() {
           label="Phone Number"
           value={phone}
           onChange={e => setPhone(e.target.value)}
+          inputRef={phoneRef}
+          error={!!errors.phone}
+          helperText={errors.phone || ''}
           fullWidth
         />
         <TextField
@@ -104,6 +134,9 @@ export default function Register() {
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
+          inputRef={emailRef}
+          error={!!errors.email}
+          helperText={errors.email || ''}
           fullWidth
         />
         <TextField
@@ -111,6 +144,9 @@ export default function Register() {
           type="password"
           value={password}
           onChange={e => setPassword(e.target.value)}
+          inputRef={passwordRef}
+          error={!!errors.password}
+          helperText={errors.password || ''}
           fullWidth
         />
         <Button variant="contained" type="submit" fullWidth>

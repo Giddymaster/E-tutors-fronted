@@ -7,6 +7,15 @@ export default function Navbar() {
   const { user, logout } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
+  const isActive = (path: string) => {
+    try {
+      // treat root as exact match, otherwise allow startsWith for nested routes
+      if (path === '/') return location.pathname === '/'
+      return location.pathname === path || location.pathname.startsWith(path + '/') || location.pathname.startsWith(path)
+    } catch {
+      return false
+    }
+  }
 
   useEffect(() => {
     // when navigating back to home, hide the center menu
@@ -21,9 +30,42 @@ export default function Navbar() {
         </Typography>
         {/* center menu (hidden until login/register is clicked). When logged in, keep visible */}
         <Box sx={{ flex: 1, display: menuOpen || user ? 'flex' : 'none', justifyContent: 'center', gap: 2 }}>
-          <Button color="inherit" component={Link} to="/tutors">Find a Tutor</Button>
-          <Button color="inherit" component={Link} to="/become-tutor">Become a Tutor</Button>
-          <Button color="inherit" component={Link} to="/about">About Us</Button>
+          <Button
+            color="inherit"
+            component={Link}
+            to="/tutors"
+            sx={{
+              color: isActive('/tutors') ? 'primary.main' : 'inherit',
+              textDecoration: isActive('/tutors') ? 'underline' : 'none',
+              fontWeight: isActive('/tutors') ? 700 : 500
+            }}
+          >
+            Find a Tutor
+          </Button>
+          <Button
+            color="inherit"
+            component={Link}
+            to="/become-tutor"
+            sx={{
+              color: isActive('/become-tutor') ? 'primary.main' : 'inherit',
+              textDecoration: isActive('/become-tutor') ? 'underline' : 'none',
+              fontWeight: isActive('/become-tutor') ? 700 : 500
+            }}
+          >
+            Become a Tutor
+          </Button>
+          <Button
+            color="inherit"
+            component={Link}
+            to="/about"
+            sx={{
+              color: isActive('/about') ? 'primary.main' : 'inherit',
+              textDecoration: isActive('/about') ? 'underline' : 'none',
+              fontWeight: isActive('/about') ? 700 : 500
+            }}
+          >
+            About Us
+          </Button>
         </Box>
 
         {/* right-side auth actions */}
