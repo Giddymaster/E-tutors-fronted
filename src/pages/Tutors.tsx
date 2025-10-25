@@ -98,7 +98,14 @@ export default function Tutors() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await api.get('/tutors')
+        const params: any = {}
+        if (subject) params.subject = subject
+        if (tutorSubject) params.q = tutorSubject
+        if (hours) params.minRating = undefined
+        if (rate) params.minRate = rate
+        if (sort) params.sort = sort
+
+        const res = await api.get('/tutors', { params })
         setTutors(res.data.tutors || [])
       } catch (err) {
         console.error('Failed to load tutors', err)

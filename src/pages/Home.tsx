@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Container, Typography, Box, Button, Paper, TextField, Grid, CircularProgress, Alert } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
 import Testimonials from '../components/Testimonials'
@@ -27,21 +27,13 @@ export default function Home() {
       setInputError('Please enter a subject or skill')
       return
     }
-
-    // If user not logged in, redirect to login with the desired query as params
-    if (!user) {
-      const params = new URLSearchParams()
-      if (selectedSubject) params.set('subject', String(selectedSubject))
-      params.set('q', qTrim)
-      navigate(`/login?${params.toString()}`)
-      return
-    }
-
-    // Logged in: fetch tutors and filter client-side
+    // Fetch tutors from the server (we include q & subject as params so backend
+    // can support server-side filtering later). We still perform client-side
+    // filtering for compatibility with current backend behavior.
     setLoadingResults(true)
     setSearchError(null)
     try {
-      const res = await api.get('/tutors')
+      const res = await api.get('/tutors', { params: { q: qTrim, subject: selectedSubject } })
       const tutors = res.data.tutors || []
 
   const q = qTrim.toLowerCase()
@@ -67,6 +59,29 @@ export default function Home() {
       setLoadingResults(false)
     }
   }
+
+  // Debounce searches when typing. The Search button still triggers immediate search.
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    // if query is empty, clear results and don't search
+    const qTrim = query.trim()
+    if (!qTrim) {
+      setResults([])
+      setInputError(null)
+      return
+    }
+
+    // debounce
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      doSearch()
+    }, 400)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, selectedSubject])
 
   return (
     <>

@@ -39,17 +39,15 @@ export default function Login() {
     setServerError(null)
     if (!validate()) return
     try {
-      // assume login returns user info or a result containing role
       const result = (await login(email, password)) as any
-      // try common shapes: result.role or result.user.role
-      const role = (result && (result.role || (result.user && result.user.role))) || null
+      let role = (result && (result.role || (result.user && result.user.role))) || null
+      if (typeof role === 'string') role = role.toUpperCase()
 
-      if (role === 'student') {
+      if (role === 'STUDENT') {
         navigate('/student')
-      } else if (role === 'tutor') {
-        navigate('/dashboard')
+      } else if (role === 'TUTOR') {
+        navigate('/tutor')
       } else {
-        // fallback
         navigate('/')
       }
     } catch (err) {
@@ -66,7 +64,6 @@ export default function Login() {
 
   return (
     <Grid container sx={{ minHeight: '100vh' }}>
-      {/* ✅ Left side: Login Form */}
       <Grid
         item
         xs={12}

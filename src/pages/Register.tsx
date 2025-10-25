@@ -67,9 +67,9 @@ export default function Register() {
       const user = await register(name, email, password)
       // register returns the user (AuthContext sets token and user)
   const role = (user as any)?.role || null
-      if (role === 'STUDENT') navigate('/student')
-      else if (role === 'TUTOR') navigate('/dashboard')
-      else navigate('/login')
+  if (role === 'STUDENT') navigate('/student')
+  else if (role === 'TUTOR') navigate('/tutor')
+  else navigate('/login')
     } catch (err) {
       console.error(err)
       if ((err as any) && (err as any).validation) {
