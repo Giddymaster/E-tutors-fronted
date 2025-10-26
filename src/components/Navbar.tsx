@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { AppBar, Toolbar, Typography, Button, Box, Menu, MenuItem, IconButton, ListItemIcon } from '@mui/material'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import logo from '../images/logo.png'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
@@ -11,6 +11,7 @@ import GavelIcon from '@mui/icons-material/Gavel'
 export default function Navbar() {
   const { user, logout } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const navigate = useNavigate()
   const [anchorElMarket, setAnchorElMarket] = useState<null | HTMLElement>(null)
   const location = useLocation()
   const isActive = (path: string) => {
@@ -150,7 +151,7 @@ export default function Navbar() {
               >
                 {user.name}
               </Typography>
-              <Button color="inherit" onClick={() => logout()}>Logout</Button>
+              <Button color="inherit" onClick={() => { setMenuOpen(false); logout(); navigate('/'); }}>Logout</Button>
             </>
           )}
         </Box>

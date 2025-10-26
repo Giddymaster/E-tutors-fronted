@@ -13,6 +13,7 @@ import Profile from '../pages/Profile'
 import OAuthCallback from '../pages/OAuthCallback'
 import StudentDashboard from '../components/StudentDashboard'
 import TutorDashboard from '../components/TutorDashboard'
+import TutorLanding from '../pages/TutorLanding'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { AuthProvider } from '../context/AuthContext'
@@ -41,6 +42,10 @@ export default function AppRoutes() {
         <Route
           path="/tutor"
           element={<ProtectedRoute requiredRole={'TUTOR'}><TutorDashboard /></ProtectedRoute>}
+        />
+        <Route
+          path="/tutor/home"
+          element={<ProtectedRoute requiredRole={'TUTOR'}><TutorLanding /></ProtectedRoute>}
         />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>

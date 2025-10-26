@@ -51,7 +51,7 @@ export default function Login() {
       if (role === 'STUDENT') {
         navigate('/student')
       } else if (role === 'TUTOR') {
-        navigate('/tutor')
+        navigate('/tutor/home')
       } else {
         navigate('/')
       }

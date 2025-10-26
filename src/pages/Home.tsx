@@ -15,8 +15,17 @@ export default function Home() {
   const [loadingResults, setLoadingResults] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [inputError, setInputError] = useState<string | null>(null)
-  const navigate = useNavigate()
   const { user } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    // If a tutor is already logged in and visits the public homepage, redirect
+    // them to their private tutor landing so they get a tailored experience.
+    if (user && user.role === 'TUTOR') {
+      navigate('/tutor/home')
+    }
+    // only run when user changes
+  }, [user, navigate])
 
   const doSearch = async () => {
     // Validate input: require subject/query
@@ -252,6 +261,7 @@ export default function Home() {
 
         {/* API errors are shown inline on the search input via helperText */}
 
+        {/* Show results or a friendly no-results message when search completed */}
         {!loadingResults && results && results.length > 0 && (
           <Box sx={{ my: 4 }}>
             <Typography variant="h5" gutterBottom>
@@ -264,6 +274,12 @@ export default function Home() {
                 </Grid>
               ))}
             </Grid>
+          </Box>
+        )}
+
+        {!loadingResults && query.trim() && results && results.length === 0 && (
+          <Box sx={{ my: 4 }}>
+            <Typography variant="h6" color="text.secondary">No tutors found for "{query.trim()}".</Typography>
           </Box>
         )}
       </Container>
