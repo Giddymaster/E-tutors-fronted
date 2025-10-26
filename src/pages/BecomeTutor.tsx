@@ -121,8 +121,8 @@ export default function BecomeTutor() {
 
       const res = await api.post('/tutors', body)
       if (res && res.data && res.data.tutor) {
-        // success: navigate to tutor area
-        navigate('/tutor')
+        // success: navigate to assignments/marketplace so tutors can see opportunites to bid
+        navigate('/assignments')
       }
     } catch (err: any) {
       console.error('Become tutor error', err)

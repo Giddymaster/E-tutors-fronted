@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext'
 import { Box, Container, Grid, Typography, Button, Stack, TextField } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import AppleIcon from '@mui/icons-material/Apple';
@@ -41,6 +42,36 @@ export default function Footer() {
       { name: 'Privacy Policy', path: '/privacy' }
     ],
   };
+
+  const { user } = useAuth()
+
+  const tutorButton = () => {
+    // If logged in as a tutor, link to tutor dashboard or assignments; otherwise show Become a Tutor
+    if (user && user.role === 'TUTOR') {
+      return (
+        <Button
+          component={RouterLink}
+          to="/tutor"
+          variant="contained"
+          color="primary"
+          fullWidth
+        >
+          Tutor Dashboard
+        </Button>
+      )
+    }
+    return (
+      <Button
+        component={RouterLink}
+        to="/become-tutor"
+        variant="outlined"
+        color="primary"
+        fullWidth
+      >
+        Become a Tutor
+      </Button>
+    )
+  }
 
   return (
   <Box component="footer" sx={{ bgcolor: '#bbb3b3ff', pt: 6, pb: 3, mt: 8 }}>
