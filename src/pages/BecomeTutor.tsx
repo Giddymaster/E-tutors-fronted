@@ -86,7 +86,7 @@ export default function BecomeTutor() {
       // Create tutor profile (minimal required fields)
       const body = {
         bio,
-        subjects: specialization ? [specialization] : [],
+        subjects: specialization ? [specialization.trim().toLowerCase()] : [],
         hourlyRate: 0,
         availability: null,
       }

@@ -55,7 +55,7 @@ export default function Profile() {
     setMessage(null)
     const payload = {
       bio: form.bio,
-      subjects: form.subjects.split(',').map((s) => s.trim()).filter(Boolean),
+      subjects: form.subjects.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean),
       hourlyRate: typeof form.hourlyRate === 'number' ? form.hourlyRate : 0,
       availability: form.availability || null
     }
