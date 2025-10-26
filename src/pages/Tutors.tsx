@@ -94,6 +94,7 @@ export default function Tutors() {
   const [tutorSubject, setTutorSubject] = useState('')
   const [hours, setHours] = useState<number | ''>('')
   const [rate, setRate] = useState<number | ''>('')
+  const [sort, setSort] = useState<string>('')
 
   useEffect(() => {
     const load = async () => {

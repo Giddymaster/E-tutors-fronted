@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { FcGoogle } from 'react-icons/fc';
-import { Container, TextField, Button, Typography, Box, Alert, Divider, Grid } from '@mui/material';
+import { Container, TextField, Button, Typography, Box, Alert, Divider, Grid, InputAdornment, IconButton } from '@mui/material';
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import AppleIcon from '@mui/icons-material/Apple';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'
@@ -12,6 +14,7 @@ export default function Register() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { register } = useAuth()
@@ -141,13 +144,27 @@ export default function Register() {
         />
         <TextField
           label="Password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           value={password}
           onChange={e => setPassword(e.target.value)}
           inputRef={passwordRef}
           error={!!errors.password}
           helperText={errors.password || ''}
           fullWidth
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  onClick={() => setShowPassword((s) => !s)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
         <Button variant="contained" type="submit" fullWidth>
           Sign Up

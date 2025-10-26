@@ -8,10 +8,12 @@ import Register from '../pages/Register'
 import Terms from '../pages/Terms'
 import Privacy from '../pages/Privacy'
 import BecomeTutor from '../pages/BecomeTutor'
+import Profile from '../pages/Profile'
 import OAuthCallback from '../pages/OAuthCallback'
 import StudentDashboard from '../components/StudentDashboard'
 import TutorDashboard from '../components/TutorDashboard'
 import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 import { AuthProvider } from '../context/AuthContext'
 import ProtectedRoute from './ProtectedRoute'
 
@@ -38,7 +40,9 @@ export default function AppRoutes() {
           path="/tutor"
           element={<ProtectedRoute requiredRole={'TUTOR'}><TutorDashboard /></ProtectedRoute>}
         />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
+      <Footer />
     </AuthProvider>
   )
 }

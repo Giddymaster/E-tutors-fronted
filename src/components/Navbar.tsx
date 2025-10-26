@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import logo from '../images/logo.png'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -25,9 +26,12 @@ export default function Navbar() {
   return (
     <AppBar position="static" sx={{ backgroundColor: '#fffbe6', color: '#222' }}>
       <Toolbar>
-        <Typography variant="h6" component={Link} to="/" sx={{ color: 'inherit', textDecoration: 'none', flexGrow: 1 }}>
-          Excellent Tutors
-        </Typography>
+        <Box component={Link} to="/" sx={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
+          <Box component="img" src={logo} alt="Excellent Tutors" sx={{ height: 36, width: 'auto' }} />
+          <Typography variant="h6" sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 700 }}>
+            Excellent Tutors
+          </Typography>
+        </Box>
         {/* center menu (hidden until login/register is clicked). When logged in, keep visible */}
         <Box sx={{ flex: 1, display: menuOpen || user ? 'flex' : 'none', justifyContent: 'center', gap: 2 }}>
           <Button
@@ -42,7 +46,7 @@ export default function Navbar() {
           >
             Find a Tutor
           </Button>
-          <Button
+          {/* <Button
             color="inherit"
             component={Link}
             to="/become-tutor"
@@ -53,7 +57,7 @@ export default function Navbar() {
             }}
           >
             Become a Tutor
-          </Button>
+          </Button> */}
           <Button
             color="inherit"
             component={Link}
@@ -77,7 +81,13 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Typography component="span" sx={{ mr: 2 }}>{user.name}</Typography>
+              <Typography
+                component={Link}
+                to="/profile"
+                sx={{ mr: 2, color: 'inherit', textDecoration: 'none' }}
+              >
+                {user.name}
+              </Typography>
               <Button color="inherit" onClick={() => logout()}>Logout</Button>
             </>
           )}

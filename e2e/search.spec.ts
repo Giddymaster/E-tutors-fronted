@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
-test('search and open tutor profile', async ({ page }) => {
+test('search and open tutor profile', async ({ page }: { page: Page }) => {
   await page.goto('/')
   const input = await page.locator('input[placeholder="Subject or skill (e.g. Calculus)"]')
   await input.fill('Math')

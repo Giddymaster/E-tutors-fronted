@@ -8,8 +8,12 @@ import {
   Box,
   Alert,
   Divider,
-  Grid
+  Grid,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import AppleIcon from '@mui/icons-material/Apple';
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -18,6 +22,7 @@ import AuthFooter from '../components/AuthFooter'
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
   const { login } = useAuth()
   const API_BASE = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'
@@ -121,11 +126,25 @@ export default function Login() {
             />
             <TextField
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               error={!!errors.password}
               helperText={errors.password || ''}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      onClick={() => setShowPassword((s) => !s)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             <Box

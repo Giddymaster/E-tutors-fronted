@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, Container, Grid, Typography, Button, Stack } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Container, Grid, Typography, Button, Stack, TextField } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import AppleIcon from '@mui/icons-material/Apple';
 import AndroidIcon from '@mui/icons-material/Android';
@@ -7,8 +7,25 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import logo from '../images/logo.png'
 
 export default function Footer() {
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterMessage, setNewsletterMessage] = useState<string | null>(null)
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault()
+    setNewsletterMessage(null)
+    const email = newsletterEmail.trim()
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setNewsletterMessage('Please enter a valid email address')
+      return
+    }
+    // Minimal local feedback. In future, call backend API to persist subscription.
+    setNewsletterMessage('Thanks for subscribing!')
+    setNewsletterEmail('')
+    setTimeout(() => setNewsletterMessage(null), 4000)
+  }
   const footerLinks = {
     'Company': [
       { name: 'About Us', path: '/about' },
@@ -18,6 +35,7 @@ export default function Footer() {
     ],
     'Support': [
       { name: 'FAQ', path: '/faq' },
+      { name: 'Help Center', path: '/help' },
       { name: 'Security', path: '/security' },
       { name: 'Terms of Service', path: '/terms' },
       { name: 'Privacy Policy', path: '/privacy' }
@@ -25,10 +43,20 @@ export default function Footer() {
   };
 
   return (
-    <Box component="footer" sx={{ bgcolor: '#f5f5f5', pt: 6, pb: 3 }}>
+  <Box component="footer" sx={{ bgcolor: '#bbb3b3ff', pt: 6, pb: 3, mt: 8 }}>
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          {/* Links Sections */}
+        <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
+          {/* First column: logo + description */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 1 }}>
+              <Box component="img" src={logo} alt="Excellent Tutors" sx={{ height: 164, width: 'auto' }} />
+              <Typography variant="body2" color="text.secondary">
+                We connect students with vetted tutors across subjects. Personalized lessons, flexible scheduling, and progress tracking to help learners succeed.
+              </Typography>
+            </Box>
+          </Grid>
+
+          {/* Middle columns: Company and Support links (2 columns) */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <Grid item xs={12} sm={6} md={3} key={category}>
               <Typography variant="h6" color="text.primary" gutterBottom>
@@ -53,39 +81,37 @@ export default function Footer() {
             </Grid>
           ))}
 
-          {/* App Download Section */}
-          <Grid item xs={12} sm={6} md={3}>
+          {/* Newsletter (fourth column) */}
+          <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <Typography variant="h6" color="text.primary" gutterBottom>
-              Download our free app
+              Subscribe to our newsletter
             </Typography>
-            <Stack spacing={2}>
+            <Box component="form" onSubmit={handleSubscribe} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <TextField
+                size="small"
+                placeholder="Your email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                sx={{ flex: 1 }}
+              />
+              <Button type="submit" variant="contained" size="small">Subscribe</Button>
+            </Box>
+            {newsletterMessage && (
+              <Typography variant="body2" color={newsletterMessage.startsWith('Thanks') ? 'success.main' : 'error'} sx={{ mt: 1 }}>
+                {newsletterMessage}
+              </Typography>
+            )}
+            <Box sx={{ mt: 2 }}>
               <Button
+                component={RouterLink}
+                to="/become-tutor"
                 variant="outlined"
-                startIcon={<AppleIcon />}
+                color="primary"
                 fullWidth
-                sx={{ 
-                  justifyContent: 'flex-start',
-                  color: 'text.primary',
-                  borderColor: 'text.primary',
-                  '&:hover': { borderColor: 'primary.main', color: 'primary.main' }
-                }}
               >
-                App Store
+                Become a Tutor
               </Button>
-              <Button
-                variant="outlined"
-                startIcon={<AndroidIcon />}
-                fullWidth
-                sx={{ 
-                  justifyContent: 'flex-start',
-                  color: 'text.primary',
-                  borderColor: 'text.primary',
-                  '&:hover': { borderColor: 'primary.main', color: 'primary.main' }
-                }}
-              >
-                Google Play
-              </Button>
-            </Stack>
+            </Box>
           </Grid>
 
           {/* Social Media & Copyright */}
@@ -104,12 +130,14 @@ export default function Footer() {
               <Typography variant="body2" color="text.secondary">
                 © {new Date().getFullYear()} Excellent Tutors. All rights reserved.
               </Typography>
-              <Stack direction="row" spacing={2}>
-                <FacebookIcon sx={{ color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'primary.main' } }} />
-                <TwitterIcon sx={{ color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'primary.main' } }} />
-                <InstagramIcon sx={{ color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'primary.main' } }} />
-                <LinkedInIcon sx={{ color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'primary.main' } }} />
-              </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Stack direction="row" spacing={2} sx={{ mr: 2 }}>
+                  <FacebookIcon sx={{ color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'primary.main' } }} />
+                  <TwitterIcon sx={{ color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'primary.main' } }} />
+                  <InstagramIcon sx={{ color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'primary.main' } }} />
+                  <LinkedInIcon sx={{ color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'primary.main' } }} />
+                </Stack>
+              </Box>
             </Box>
           </Grid>
         </Grid>

@@ -25,13 +25,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true)
 
   const fetchMe = async () => {
-    const token = getAuthToken()
-    if (!token) {
-      setLoading(false)
-      return
-    }
-
     try {
+      // If we don't have an access token, try refreshing using HttpOnly cookie
+      let token = getAuthToken()
+      if (!token) {
+        try {
+          const r = await api.post('/auth/refresh')
+          token = r.data?.token
+          if (token) setAuthToken(token)
+        } catch (err) {
+          // refresh failed or no cookie set
+          setLoading(false)
+          return
+        }
+      }
+
       const res = await api.get('/auth/me')
       setUser(res.data.user)
     } catch (err) {
