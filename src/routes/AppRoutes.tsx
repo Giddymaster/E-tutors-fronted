@@ -7,6 +7,7 @@ import Login from '../pages/Login'
 import Register from '../pages/Register'
 import Terms from '../pages/Terms'
 import Privacy from '../pages/Privacy'
+import About from '../pages/About'
 import BecomeTutor from '../pages/BecomeTutor'
 import Assignments from '../pages/Assignments'
 import Profile from '../pages/Profile'
@@ -29,11 +30,12 @@ export default function AppRoutes() {
         <Route path="/tutors/:id" element={<TutorProfile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-  <Route path="/terms" element={<Terms />} />
-  <Route path="/privacy" element={<Privacy />} />
-  <Route path="/become-tutor" element={<BecomeTutor />} />
-  <Route path="/assignments" element={<Assignments />} />
-  <Route path="/oauth/callback" element={<OAuthCallback />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/become-tutor" element={<BecomeTutor />} />
+        <Route path="/assignments" element={<Assignments />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
   
         <Route
           path="/student"

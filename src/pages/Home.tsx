@@ -314,7 +314,15 @@ export default function Home() {
           <Typography variant="h5" gutterBottom>
             Ready to find a tutor?
           </Typography>
-          <Button variant="contained" size="large" component={Link} to="/login">
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => {
+              // if user is logged in, send them to the tutors listing (Find a Tutor); otherwise go to login
+              if (user) navigate('/tutors')
+              else navigate('/login')
+            }}
+          >
             Find a tutor
           </Button>
         </Box>
@@ -326,8 +334,6 @@ export default function Home() {
           <Testimonials />
         </Box>
       </Container>
-
-      {/* Footer removed. Use <Footer /> component where needed. */}
     </>
   )
 }

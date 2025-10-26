@@ -1,6 +1,5 @@
 import React from 'react'
-import { Card, CardContent, Typography, Button, Box, Chip } from '@mui/material'
-import StarIcon from '@mui/icons-material/Star'
+import { Card, CardContent, Typography, Button, Box, Chip, Tooltip, Rating } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -23,6 +22,12 @@ export default function TutorCard({ tutor }: any) {
     return 'General'
   })()
 
+  const hourlyRate = (() => {
+    const rate = tutor?.hourlyRate ?? tutor?.raw?.hourlyRate ?? 20
+    const num = typeof rate === 'number' ? rate : Number(rate || 20)
+    return isNaN(num) ? 20 : num
+  })()
+
   const handleBook = () => {
     if (user && user.role === 'STUDENT') {
       navigate(`/tutors/${tutor.id}`)
@@ -38,21 +43,24 @@ export default function TutorCard({ tutor }: any) {
           <Box>
             <Typography variant="h6">{tutor.name || 'Tutor Name'}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <StarIcon fontSize="small" sx={{ color: 'goldenrod' }} />
-                <Typography variant="body2">{(tutor?.raw?.rating ?? tutor?.rating ?? 0).toFixed(1)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <CheckCircleIcon fontSize="small" color="success" />
-                <Typography variant="body2">
-                  {Array.isArray(tutor?.raw?.bookings)
-                    ? tutor.raw.bookings.filter((b: any) => b.status === 'ACCEPTED').length
-                    : 0} completed
-                </Typography>
-              </Box>
+              <Tooltip title={`Rating: ${(tutor?.ratingComputed ?? tutor?.rating ?? 0).toFixed(1)} • ${tutor?.reviewsCount ?? 0} reviews`}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Rating value={Number((tutor?.ratingComputed ?? tutor?.rating ?? 0))} precision={0.1} size="small" readOnly />
+                </Box>
+              </Tooltip>
+
+              <Tooltip title={`${tutor?.completedCount ?? 0} completed bookings`}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <CheckCircleIcon fontSize="small" color="success" />
+                  <Typography variant="body2">{tutor?.completedCount ?? 0} completed</Typography>
+                </Box>
+              </Tooltip>
             </Box>
           </Box>
-          <Chip label={primarySubject} size="small" />
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+            <Chip label={primarySubject} size="small" />
+            <Typography variant="caption" color="text.secondary">${hourlyRate.toFixed(0)}/hr</Typography>
+          </Box>
         </Box>
 
         <Typography variant="body2" sx={{ mb: 2 }}>
