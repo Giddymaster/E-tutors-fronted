@@ -9,11 +9,18 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+const API_BASE = (import.meta.env.VITE_API_BASE as string) || '/api'
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || 'http://localhost:4000/api',
-  // allow sending cookies (refresh token) to the API
+  baseURL: API_BASE,
+  timeout: 10000, // 10 seconds
   withCredentials: true,
 })
+
+// Helpful debug in development so you can see which base URL is in use
+if ((import.meta.env as any).DEV) {
+  // eslint-disable-next-line no-console
+  console.debug('[api] baseURL =', API_BASE)
+}
 
 // Attach token from localStorage to each request in a type-safe way
 api.interceptors.request.use((config) => {
