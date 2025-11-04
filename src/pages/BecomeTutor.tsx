@@ -8,11 +8,15 @@ import {
   Divider,
   FormControlLabel,
   Checkbox,
+  InputAdornment,
+  IconButton,
 } from '@mui/material'
 import { FcGoogle } from 'react-icons/fc'
 import AppleIcon from '@mui/icons-material/Apple'
 import DescriptionIcon from '@mui/icons-material/Description'
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import { useNavigate } from 'react-router-dom'
@@ -25,6 +29,7 @@ export default function BecomeTutor() {
   const [password, setPassword] = useState('')
   const [bio, setBio] = useState('')
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ [k: string]: string | null }>({
     firstName: null,
     lastName: null,
@@ -161,7 +166,29 @@ export default function BecomeTutor() {
               />
 
 
-              <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} fullWidth error={!!errors.password} helperText={errors.password || ''} />
+              <TextField
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                fullWidth
+                error={!!errors.password}
+                helperText={errors.password || ''}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        onClick={() => setShowPassword((s) => !s)}
+                        onMouseDown={(e) => e.preventDefault()}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
               <Button variant="contained" type="submit" fullWidth sx={{ mt: 2 }}>
                 Submit
