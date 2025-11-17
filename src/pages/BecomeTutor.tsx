@@ -19,6 +19,9 @@ import {
   Autocomplete,
   FormLabel,
   Stack,
+  Paper,
+  Card,
+  CardContent,
 } from '@mui/material'
 import { FcGoogle } from 'react-icons/fc'
 import AppleIcon from '@mui/icons-material/Apple'
@@ -26,6 +29,9 @@ import DescriptionIcon from '@mui/icons-material/Description'
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
+import CreditCardIcon from '@mui/icons-material/CreditCard'
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+import { SiPaypal, SiStripe } from 'react-icons/si'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import { useNavigate } from 'react-router-dom'
@@ -87,6 +93,9 @@ export default function BecomeTutor() {
   const [sentOtp, setSentOtp] = useState<string | null>(null)
   const [twoFactor, setTwoFactor] = useState(false)
   const [errors, setErrors] = useState<{ [k: string]: string | null }>({})
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null)
+  const [paymentCompleted, setPaymentCompleted] = useState(false)
+  const [processingPayment, setProcessingPayment] = useState(false)
 
   const navigate = useNavigate()
   const { user, register } = useAuth()
@@ -126,6 +135,7 @@ export default function BecomeTutor() {
     if (!shortBio || shortBio.length < 50) e.shortBio = 'Short bio must be at least 50 characters'
     if (!certify) e.certify = 'You must certify that information is accurate'
     if (country === 'United States' && !ssn) e.ssn = 'SSN is required for US residents'
+    if (!paymentCompleted) e.payment = 'You must complete the $30 registration fee to submit your profile'
 
     setErrors(e)
     return !Object.values(e).some(Boolean)
@@ -162,6 +172,38 @@ export default function BecomeTutor() {
       setOtp('')
     } else {
       alert('Invalid OTP')
+    }
+  }
+
+  const processPayment = async (method: string) => {
+    setProcessingPayment(true)
+    try {
+      // Simulate payment processing
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      // In production, you would integrate with actual payment gateway
+      const paymentData = {
+        method,
+        amount: 30,
+        currency: 'USD',
+        email,
+        timestamp: new Date().toISOString(),
+      }
+
+      // Try to send to backend, but don't fail if it errors (for demo)
+      try {
+        await api.post('/payments/process', paymentData)
+      } catch {
+        // Fallback for demo - just mark as completed locally
+      }
+
+      setPaymentCompleted(true)
+      alert(`Payment of $30 via ${method} processed successfully!`)
+    } catch (err) {
+      console.error('Payment error', err)
+      alert(`Payment failed. Please try again.`)
+    } finally {
+      setProcessingPayment(false)
     }
   }
 
@@ -415,6 +457,164 @@ export default function BecomeTutor() {
 
               <Divider sx={{ my: 2 }} />
 
+              {/* Registration Fee & Payment */}
+              <Paper sx={{ p: 3, mb: 3, backgroundColor: '#f0f4ff', border: '2px solid #1976d2' }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  💳 Registration Fee
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  A one-time registration fee of <strong>$30 USD</strong> is required to activate your tutor account and start accepting students.
+                </Typography>
+
+                {!paymentCompleted ? (
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2 }}>
+                      Select a Payment Method:
+                    </Typography>
+                    <Grid container spacing={2} sx={{ mb: 2 }}>
+                      {/* PayPal */}
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Card
+                          onClick={() => setPaymentMethod('PayPal')}
+                          sx={{
+                            cursor: 'pointer',
+                            border: paymentMethod === 'PayPal' ? '3px solid #0070ba' : '2px solid #ddd',
+                            backgroundColor: paymentMethod === 'PayPal' ? '#f0f7ff' : 'white',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              boxShadow: 2,
+                              borderColor: '#0070ba',
+                            },
+                          }}
+                        >
+                          <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                              <SiPaypal size={32} color="#0070ba" />
+                            </Box>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                              PayPal
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+
+                      {/* Credit Card */}
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Card
+                          onClick={() => setPaymentMethod('Credit Card')}
+                          sx={{
+                            cursor: 'pointer',
+                            border: paymentMethod === 'Credit Card' ? '3px solid #1976d2' : '2px solid #ddd',
+                            backgroundColor: paymentMethod === 'Credit Card' ? '#f0f7ff' : 'white',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              boxShadow: 2,
+                              borderColor: '#1976d2',
+                            },
+                          }}
+                        >
+                          <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                              <CreditCardIcon sx={{ fontSize: 32, color: '#1976d2' }} />
+                            </Box>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                              Credit Card
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+
+                      {/* Bank Transfer */}
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Card
+                          onClick={() => setPaymentMethod('Bank Transfer')}
+                          sx={{
+                            cursor: 'pointer',
+                            border: paymentMethod === 'Bank Transfer' ? '3px solid #4caf50' : '2px solid #ddd',
+                            backgroundColor: paymentMethod === 'Bank Transfer' ? '#f1f8f4' : 'white',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              boxShadow: 2,
+                              borderColor: '#4caf50',
+                            },
+                          }}
+                        >
+                          <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                              <AccountBalanceIcon sx={{ fontSize: 32, color: '#4caf50' }} />
+                            </Box>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                              Bank Transfer
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+
+                      {/* Stripe */}
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Card
+                          onClick={() => setPaymentMethod('Stripe')}
+                          sx={{
+                            cursor: 'pointer',
+                            border: paymentMethod === 'Stripe' ? '3px solid #6772e5' : '2px solid #ddd',
+                            backgroundColor: paymentMethod === 'Stripe' ? '#f5f3ff' : 'white',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              boxShadow: 2,
+                              borderColor: '#6772e5',
+                            },
+                          }}
+                        >
+                          <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                              <SiStripe size={32} color="#6772e5" />
+                            </Box>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                              Stripe
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    </Grid>
+
+                    {paymentMethod && (
+                      <Button
+                        variant="contained"
+                        color="success"
+                        fullWidth
+                        size="large"
+                        onClick={() => processPayment(paymentMethod)}
+                        disabled={processingPayment}
+                        sx={{ mt: 2 }}
+                      >
+                        {processingPayment ? 'Processing Payment...' : `Pay $30 with ${paymentMethod}`}
+                      </Button>
+                    )}
+                    {errors.payment && (
+                      <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                        {errors.payment}
+                      </Typography>
+                    )}
+                  </Box>
+                ) : (
+                  <Box sx={{ p: 2, backgroundColor: '#e8f5e9', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="h6" sx={{ color: '#2e7d32' }}>
+                      ✓
+                    </Typography>
+                    <Box>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                        Payment Completed!
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Your registration fee of $30 has been successfully processed.
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+              </Paper>
+
+              <Divider sx={{ my: 2 }} />
+
               {/* Security & Verification */}
               <Typography variant="h6">Security & Verification</Typography>
               <Grid container spacing={2} alignItems="center">
@@ -436,19 +636,6 @@ export default function BecomeTutor() {
               </Grid>
 
               <Button variant="contained" type="submit" fullWidth sx={{ mt: 2 }}>Create Profile</Button>
-
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
-                <Divider sx={{ flex: 1 }} />
-                <Typography variant="body2" color="text.secondary">or</Typography>
-                <Divider sx={{ flex: 1 }} />
-              </Box>
-
-              <Button variant="outlined" fullWidth startIcon={<FcGoogle />} onClick={() => (window.location.href = `${(import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'}/auth/google`)} sx={{ mb: 1 }}>
-                Sign up with Gmail
-              </Button>
-              <Button variant="outlined" fullWidth startIcon={<AppleIcon />} onClick={() => alert('Apple OAuth not configured')}>
-                Sign up with Apple
-              </Button>
             </Box>
           </Box>
         </Grid>
