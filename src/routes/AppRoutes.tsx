@@ -11,6 +11,7 @@ import About from '../pages/About'
 import BecomeTutor from '../pages/BecomeTutor'
 import Assignments from '../pages/Assignments'
 import AvailableJobs from '../pages/AvailableJobs'
+import FAQ from '../pages/FAQ'
 import Profile from '../pages/Profile'
 import OAuthCallback from '../pages/OAuthCallback'
 import StudentDashboard from '../components/StudentDashboard'
@@ -34,6 +35,7 @@ export default function AppRoutes() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/about" element={<About />} />
+        <Route path="/faq" element={<FAQ />} />
         <Route path="/become-tutor" element={<BecomeTutor />} />
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/available-jobs" element={<ProtectedRoute requiredRole={'TUTOR'}><AvailableJobs /></ProtectedRoute>} />
