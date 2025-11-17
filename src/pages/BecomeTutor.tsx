@@ -113,9 +113,9 @@ export default function BecomeTutor() {
   useEffect(() => {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
-      setTimeZone(tz || '')
+      setTimeZone(tz || 'America/New_York')
     } catch (e) {
-      setTimeZone('UTC')
+      setTimeZone('America/New_York')
     }
   }, [])
 
@@ -408,7 +408,7 @@ export default function BecomeTutor() {
 
               {/* Availability & Schedule */}
               <Typography variant="h6">Availability & Schedule</Typography>
-              <Typography variant="body2">Timezone: {timeZone}</Typography>
+              <Typography variant="body2">Timezone: America/New_York (US Eastern Time)</Typography>
               <Grid container spacing={1} sx={{ mb: 1 }}>
                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                   <Grid item xs={12} sm={6} md={4} key={day}>
@@ -524,34 +524,8 @@ export default function BecomeTutor() {
                         </Card>
                       </Grid>
 
-                      {/* Bank Transfer */}
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                          onClick={() => setPaymentMethod('Bank Transfer')}
-                          sx={{
-                            cursor: 'pointer',
-                            border: paymentMethod === 'Bank Transfer' ? '3px solid #4caf50' : '2px solid #ddd',
-                            backgroundColor: paymentMethod === 'Bank Transfer' ? '#f1f8f4' : 'white',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              boxShadow: 2,
-                              borderColor: '#4caf50',
-                            },
-                          }}
-                        >
-                          <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
-                              <AccountBalanceIcon sx={{ fontSize: 32, color: '#4caf50' }} />
-                            </Box>
-                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                              Bank Transfer
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-
                       {/* Stripe */}
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item xs={12} sm={6} md={4}>
                         <Card
                           onClick={() => setPaymentMethod('Stripe')}
                           sx={{
