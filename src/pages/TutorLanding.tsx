@@ -14,6 +14,7 @@ export default function TutorLanding() {
 
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Button component={Link} to="/tutor" variant="contained">Go to Dashboard</Button>
+            <Button component={Link} to="/available-jobs" variant="contained" color="success">View Available Jobs</Button>
             <Button component={Link} to="/assignments?view=my-bids" variant="outlined">My Bids</Button>
             <Button component={Link} to="/profile" variant="outlined">Edit Profile</Button>
           </Box>
