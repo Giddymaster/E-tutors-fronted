@@ -8,6 +8,16 @@ import api from '../utils/api'
 
 // const SUBJECTS = ['Math', 'Physics', 'Chemistry', 'English', 'Biology', 'Computer Science', 'Economics']
 
+interface Job {
+  id: string
+  title: string
+  subject: string
+  description: string
+  budget: number
+  studentName: string
+  createdAt: string
+}
+
 export default function Home() {
   const [query, setQuery] = useState('')
   const [selectedSubject, setSelectedSubject] = useState(null)
@@ -15,6 +25,8 @@ export default function Home() {
   const [loadingResults, setLoadingResults] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [inputError, setInputError] = useState<string | null>(null)
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [loadingJobs, setLoadingJobs] = useState(true)
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -22,10 +34,59 @@ export default function Home() {
     // If a tutor is already logged in and visits the public homepage, redirect
     // them to their private tutor landing so they get a tailored experience.
     if (user && user.role === 'TUTOR') {
-      navigate('/tutor/home')
+      navigate('/available-jobs')
     }
     // only run when user changes
   }, [user, navigate])
+
+  const fetchJobs = async () => {
+    try {
+      // Try to fetch from API first, fallback to localStorage mock data
+      try {
+        const res = await api.get('/assignments')
+        const availableJobs = (res.data.assignments || [])
+          .filter((a: any) => !a.acceptedBidId)
+          .slice(0, 3) // Show only first 3 jobs on home page
+          .map((a: any) => ({
+            id: a.id,
+            title: a.title,
+            subject: a.subject,
+            description: a.description,
+            budget: a.budget,
+            studentName: a.createdBy || 'Anonymous',
+            createdAt: new Date().toISOString(),
+          }))
+        setJobs(availableJobs)
+      } catch {
+        // Fallback to localStorage for demo purposes
+        const stored = localStorage.getItem('et_assignments_v1')
+        if (stored) {
+          const assignments = JSON.parse(stored)
+          const availableJobs = assignments
+            .filter((a: any) => !a.acceptedBidId)
+            .slice(0, 3)
+            .map((a: any) => ({
+              id: a.id,
+              title: a.title,
+              subject: a.subject,
+              description: a.description,
+              budget: a.budget,
+              studentName: a.createdBy || 'Anonymous',
+              createdAt: new Date().toISOString(),
+            }))
+          setJobs(availableJobs)
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching jobs:', err)
+    } finally {
+      setLoadingJobs(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchJobs()
+  }, [])
 
   const doSearch = async () => {
     // Validate input: require subject/query
@@ -282,6 +343,87 @@ export default function Home() {
             <Typography variant="h6" color="text.secondary">No tutors found for "{query.trim()}".</Typography>
           </Box>
         )}
+      </Container>
+
+      {/* ✅ Available Jobs Section */}
+      <Container sx={{ mt: 8, mb: 8 }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
+            💼 Available Tutoring Jobs
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            Students are looking for tutors! Browse available opportunities and bid on jobs that match your expertise.
+          </Typography>
+        </Box>
+
+        {loadingJobs ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : jobs.length === 0 ? (
+          <Paper sx={{ p: 3, textAlign: 'center', backgroundColor: '#f5f5f5' }}>
+            <Typography variant="body1" color="text.secondary">
+              No available jobs yet. Check back soon!
+            </Typography>
+          </Paper>
+        ) : (
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {jobs.map((job) => (
+              <Grid item xs={12} md={4} key={job.id}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: 3,
+                      transform: 'translateY(-4px)',
+                    },
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    {job.title}
+                  </Typography>
+                  <Box sx={{ mb: 1 }}>
+                    <Typography variant="caption" sx={{ backgroundColor: '#e3f2fd', px: 1, py: 0.5, borderRadius: 1, display: 'inline-block' }}>
+                      {job.subject}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flex: 1 }}>
+                    {job.description.length > 80 ? `${job.description.substring(0, 80)}...` : job.description}
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+                      ${job.budget}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {job.studentName}
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Button
+            variant="contained"
+            color="success"
+            size="large"
+            onClick={() => {
+              if (user && user.role === 'TUTOR') {
+                navigate('/available-jobs')
+              } else {
+                navigate('/login')
+              }
+            }}
+          >
+            {user && user.role === 'TUTOR' ? 'View All Available Jobs' : 'Login to Bid on Jobs'}
+          </Button>
+        </Box>
       </Container>
 
       {/* ✅ Recommended Tutors Section Removed */}

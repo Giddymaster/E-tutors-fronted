@@ -35,7 +35,6 @@ export default function AvailableJobs() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchJobs()
@@ -75,56 +74,10 @@ export default function AvailableJobs() {
     }
   }
 
-  const handleApplyJob = async (jobId: string) => {
+  const handleApplyJob = (jobId: string) => {
     if (!user) return navigate('/login')
-
-    const bidAmount = prompt('Enter your bid amount (USD):')
-    if (!bidAmount) return
-
-    const amount = Number(bidAmount)
-    if (isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid amount')
-      return
-    }
-
-    try {
-      // Try to submit via API
-      try {
-        await api.post(`/assignments/${jobId}/bid`, { amount })
-        setAppliedJobs((prev) => new Set(prev).add(jobId))
-        alert('Bid submitted successfully!')
-      } catch {
-        // Fallback: update localStorage
-        const stored = localStorage.getItem('et_assignments_v1')
-        if (stored) {
-          const assignments = JSON.parse(stored)
-          const updated = assignments.map((a: any) => {
-            if (a.id === jobId) {
-              return {
-                ...a,
-                bids: [
-                  ...a.bids,
-                  {
-                    id: Date.now().toString(),
-                    tutorId: user.id,
-                    tutorName: user.name,
-                    amount,
-                    message: '',
-                  },
-                ],
-              }
-            }
-            return a
-          })
-          localStorage.setItem('et_assignments_v1', JSON.stringify(updated))
-          setAppliedJobs((prev) => new Set(prev).add(jobId))
-          alert('Bid submitted successfully!')
-        }
-      }
-    } catch (err) {
-      console.error('Error applying for job:', err)
-      alert('Failed to submit bid')
-    }
+    // Navigate to bid page with job ID
+    navigate(`/bid/${jobId}`)
   }
 
   const filteredJobs = jobs.filter(
@@ -176,70 +129,65 @@ export default function AvailableJobs() {
         </Card>
       ) : (
         <Grid container spacing={3}>
-          {filteredJobs.map((job) => {
-            const hasApplied = appliedJobs.has(job.id)
-
-            return (
-              <Grid item xs={12} md={6} lg={4} key={job.id}>
-                <Card
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      boxShadow: 3,
-                      transform: 'translateY(-4px)',
-                    },
-                  }}
-                >
-                  <CardContent sx={{ pb: 1, flexGrow: 1 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                        {job.title}
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ mb: 2 }}>
-                      <Chip
-                        label={job.subject}
-                        size="small"
-                        variant="outlined"
-                        sx={{ mr: 1, mb: 1 }}
-                      />
-                    </Box>
-
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2, minHeight: '3em' }}>
-                      {job.description.length > 100
-                        ? `${job.description.substring(0, 100)}...`
-                        : job.description}
+          {filteredJobs.map((job) => (
+            <Grid item xs={12} md={6} lg={4} key={job.id}>
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: 3,
+                    transform: 'translateY(-4px)',
+                  },
+                }}
+              >
+                <CardContent sx={{ pb: 1, flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      {job.title}
                     </Typography>
+                  </Box>
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                      <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
-                        ${job.budget}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Posted by {job.studentName}
-                      </Typography>
-                    </Box>
-                  </CardContent>
+                  <Box sx={{ mb: 2 }}>
+                    <Chip
+                      label={job.subject}
+                      size="small"
+                      variant="outlined"
+                      sx={{ mr: 1, mb: 1 }}
+                    />
+                  </Box>
 
-                  <CardActions sx={{ pt: 1 }}>
-                    <Button
-                      fullWidth
-                      variant={hasApplied ? 'outlined' : 'contained'}
-                      color={hasApplied ? 'success' : 'primary'}
-                      onClick={() => handleApplyJob(job.id)}
-                      disabled={hasApplied}
-                    >
-                      {hasApplied ? '✓ Bid Submitted' : 'Place Bid'}
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            )
-          })}
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2, minHeight: '3em' }}>
+                    {job.description.length > 100
+                      ? `${job.description.substring(0, 100)}...`
+                      : job.description}
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+                      ${job.budget}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Posted by {job.studentName}
+                    </Typography>
+                  </Box>
+                </CardContent>
+
+                <CardActions sx={{ pt: 1 }}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleApplyJob(job.id)}
+                  >
+                    Place Bid
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
       )}
     </Container>
