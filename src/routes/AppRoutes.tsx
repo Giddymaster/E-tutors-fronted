@@ -12,6 +12,7 @@ import BecomeTutor from '../pages/BecomeTutor'
 import Assignments from '../pages/Assignments'
 import AvailableJobs from '../pages/AvailableJobs'
 import Bid from '../pages/Bid'
+import PostJob from '../pages/PostJob'
 import FAQ from '../pages/FAQ'
 import Profile from '../pages/Profile'
 import OAuthCallback from '../pages/OAuthCallback'
@@ -41,6 +42,7 @@ export default function AppRoutes() {
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/available-jobs" element={<ProtectedRoute requiredRole={'TUTOR'}><AvailableJobs /></ProtectedRoute>} />
         <Route path="/bid/:jobId" element={<ProtectedRoute requiredRole={'TUTOR'}><Bid /></ProtectedRoute>} />
+        <Route path="/post-job" element={<ProtectedRoute requiredRole={'STUDENT'}><PostJob /></ProtectedRoute>} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
   
         <Route
