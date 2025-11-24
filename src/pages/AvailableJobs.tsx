@@ -27,6 +27,8 @@ interface Job {
   studentName: string
   createdAt: string
   status?: string
+  bids?: any[]
+  bidsCount?: number
 }
 
 export default function AvailableJobs() {
@@ -35,6 +37,7 @@ export default function AvailableJobs() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchJobs()
@@ -45,15 +48,31 @@ export default function AvailableJobs() {
       // Try to fetch from API first, fallback to localStorage mock data
       try {
         const res = await api.get('/assignments')
-        setJobs(res.data.assignments || [])
+        // assignments may include bids; filter accepted and map
+        const apiJobs = (res.data.assignments || [])
+          .filter((a: any) => !a.acceptedBidId && ((a.bids || []).length < 5))
+          .map((a: any) => ({
+            ...a,
+            bids: a.bids || [],
+            bidsCount: (a.bids || []).length,
+            createdAt: a.createdAt || new Date().toISOString(),
+        }))
+        setJobs(apiJobs)
+        // compute applied if user is a tutor
+        if (user) {
+          const appliedIds = (apiJobs as any[])
+            .filter(j => (j.bids || []).some((b: any) => b.tutorId === user.id))
+            .map(j => String(j.id))
+          setAppliedJobs(new Set<string>(appliedIds))
+        }
       } catch {
         // Fallback to localStorage for demo purposes
         const stored = localStorage.getItem('et_assignments_v1')
         if (stored) {
           const assignments = JSON.parse(stored)
-          // Filter to show only assignments without accepted bids
+          // Filter to show only assignments without accepted bids and with fewer than 5 bids
           const availableJobs = assignments
-            .filter((a: any) => !a.acceptedBidId)
+            .filter((a: any) => !a.acceptedBidId && ((a.bids || []).length < 5))
             .map((a: any) => ({
               id: a.id,
               title: a.title,
@@ -61,10 +80,15 @@ export default function AvailableJobs() {
               description: a.description,
               budget: a.budget,
               studentName: a.createdBy || 'Anonymous',
-              createdAt: new Date().toISOString(),
+              createdAt: a.createdAt || new Date().toISOString(),
+              bids: a.bids || [],
               bidsCount: a.bids?.length || 0,
             }))
           setJobs(availableJobs)
+          if (user) {
+            const appliedIds = availableJobs.filter((j: any) => (j.bids || []).some((b: any) => b.tutorId === user.id)).map((j: any) => String(j.id))
+            setAppliedJobs(new Set<string>(appliedIds))
+          }
         }
       }
     } catch (err) {
@@ -169,21 +193,34 @@ export default function AvailableJobs() {
                     <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
                       ${job.budget}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Posted by {job.studentName}
-                    </Typography>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Posted by {job.studentName}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {(() => {
+                          try {
+                            const minutes = Math.max(0, Math.floor((Date.now() - new Date(job.createdAt).getTime()) / 60000))
+                            return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`
+                          } catch (e) {
+                            return ''
+                          }
+                        })()}
+                      </Typography>
+                    </Box>
                   </Box>
                 </CardContent>
 
                 <CardActions sx={{ pt: 1 }}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleApplyJob(job.id)}
-                  >
-                    Place Bid
-                  </Button>
+                  {appliedJobs.has(job.id) ? (
+                    <Button fullWidth variant="outlined" color="success" disabled>
+                      ✓ Bid Submitted
+                    </Button>
+                  ) : (
+                    <Button fullWidth variant="contained" color="primary" onClick={() => handleApplyJob(job.id)}>
+                      Place Bid
+                    </Button>
+                  )}
                 </CardActions>
               </Card>
             </Grid>
