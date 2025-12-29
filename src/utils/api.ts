@@ -17,6 +17,12 @@ const API_BASE = ((): string => {
   return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`
 })()
 
+// TEMP DEBUG: log the computed API base so we can confirm the value in deployed builds
+if (!(import.meta.env as any).DEV) {
+  // eslint-disable-next-line no-console
+  console.debug('[api] computed API_BASE =', API_BASE)
+}
+
 const api = axios.create({
   baseURL: API_BASE,
   timeout: 10000, // 10 seconds
