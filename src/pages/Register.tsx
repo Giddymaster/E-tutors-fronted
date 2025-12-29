@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { FcGoogle } from 'react-icons/fc';
-import { Container, TextField, Button, Typography, Box, Alert, Divider, Grid, InputAdornment, IconButton } from '@mui/material';
+import { Container, TextField, Button, Typography, Box, Alert, Divider, Grid, InputAdornment, IconButton, LinearProgress, CircularProgress } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import AppleIcon from '@mui/icons-material/Apple';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/AuthContext' 
 
 
 export default function Register() {
@@ -15,6 +15,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { register } = useAuth()
@@ -44,14 +45,34 @@ export default function Register() {
   })
   const [serverError, setServerError] = useState<string | null>(null)
 
+  // Password strength (0-5)
+  const passwordStrength = (pw: string) => {
+    let score = 0
+    if (pw.length >= 8) score += 1
+    if (/[A-Z]/.test(pw)) score += 1
+    if (/[a-z]/.test(pw)) score += 1
+    if (/[0-9]/.test(pw)) score += 1
+    if (/[^A-Za-z0-9]/.test(pw)) score += 1
+    return score
+  }
+  const passwordStrengthLabel = (score: number) => {
+    if (score <= 1) return 'Very weak'
+    if (score === 2) return 'Weak'
+    if (score === 3) return 'Fair'
+    if (score === 4) return 'Good'
+    return 'Strong'
+  }
+
   const validate = () => {
     const e: any = { firstName: null, lastName: null, phone: null, email: null, password: null }
     if (!firstName) e.firstName = 'First name is required'
     if (!lastName) e.lastName = 'Last name is required'
     if (!phone) e.phone = 'Phone is required'
+    else if (!/^\+?[0-9\s\-]{7,15}$/.test(phone)) e.phone = 'Enter a valid phone number (include country code)'
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) e.email = 'Valid email is required'
     if (!password) e.password = 'Password is required'
-    // Note: server enforces stronger password rules (8-15 chars, upper/lower/number)
+    else if (password.length < 8 || password.length > 15) e.password = 'Password must be 8-15 characters'
+    else if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) e.password = 'Password must include upper and lower case letters and a number'
     setErrors(e)
     // focus first invalid field
     const order = ['firstName', 'lastName', 'phone', 'email', 'password']
@@ -66,22 +87,26 @@ export default function Register() {
     if (!validate()) return
 
     try {
+      setLoading(true)
       const name = `${firstName.trim()} ${lastName.trim()}`
       const user = await register(name, email, password)
-      // register returns the user (AuthContext sets token and user)
-  const role = (user as any)?.role || null
-  if (role === 'STUDENT') navigate('/student')
-  else if (role === 'TUTOR') navigate('/tutor')
-  else navigate('/login')
+      const role = (user as any)?.role || null
+      if (role === 'STUDENT') navigate('/student')
+      else if (role === 'TUTOR') navigate('/tutor')
+      else navigate('/login')
     } catch (err) {
-      console.error(err)
+      if (import.meta.env.DEV) console.error(err)
       if ((err as any) && (err as any).validation) {
         const first = (err as any).validation[0]
         if (first && first.param) setErrors((s) => ({ ...s, [first.param]: first.msg }))
         else setServerError((err as any).validation.map((v: any) => v.msg).join('\n'))
+      } else if ((err as any)?.field && (err as any)?.message) {
+        setErrors((s) => ({ ...s, [(err as any).field]: (err as any).message }))
       } else {
         setServerError((err as any)?.message || 'Registration failed')
       }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -125,12 +150,14 @@ export default function Register() {
         </Grid>
         <TextField
           label="Phone Number"
+          type="tel"
           value={phone}
           onChange={e => setPhone(e.target.value)}
           inputRef={phoneRef}
           error={!!errors.phone}
-          helperText={errors.phone || ''}
+          helperText={errors.phone || 'Include country code, e.g. +2547...'}
           fullWidth
+          inputProps={{ pattern: '\\+?[0-9\\s-]{7,15}', inputMode: 'tel' }}
         />
         <TextField
           label="Email"
@@ -149,7 +176,7 @@ export default function Register() {
           onChange={e => setPassword(e.target.value)}
           inputRef={passwordRef}
           error={!!errors.password}
-          helperText={errors.password || ''}
+          helperText={errors.password || '8-15 chars, upper/lower and a number'}
           fullWidth
           InputProps={{
             endAdornment: (
@@ -166,8 +193,16 @@ export default function Register() {
             ),
           }}
         />
-        <Button variant="contained" type="submit" fullWidth>
-          Sign Up
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <LinearProgress variant="determinate" value={(passwordStrength(password) / 5) * 100} sx={{ height: 6, borderRadius: 2 }} />
+          </Box>
+          <Typography variant="caption" color="text.secondary">
+            {password ? passwordStrengthLabel(passwordStrength(password)) : 'Very weak'}
+          </Typography>
+        </Box>
+        <Button variant="contained" type="submit" fullWidth disabled={loading} startIcon={loading ? <CircularProgress color="inherit" size={18} /> : null}>
+          {loading ? 'Creating account...' : 'Sign Up'}
         </Button>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Divider sx={{ flex: 1 }} />

@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { AppBar, Toolbar, Typography, Button, Box, Menu, MenuItem, IconButton, ListItemIcon } from '@mui/material'
+import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import logo from '../images/logo.png'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
-import AssignmentIcon from '@mui/icons-material/Assignment'
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline'
-import GavelIcon from '@mui/icons-material/Gavel'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
-  const [anchorElMarket, setAnchorElMarket] = useState<null | HTMLElement>(null)
   const location = useLocation()
   const isActive = (path: string) => {
     try {
@@ -40,6 +35,22 @@ export default function Navbar() {
         </Box>
         {/* center menu (hidden until login/register is clicked). When logged in, keep visible */}
         <Box sx={{ flex: 1, display: menuOpen || user ? 'flex' : 'none', justifyContent: 'center', gap: 2 }}>
+          {/* Home (first button for logged-in users) */}
+          {user && (
+            <Button
+              color="inherit"
+              component={Link}
+              to={user.role === 'STUDENT' ? '/student' : '/tutor'}
+              sx={{
+                color: isActive(user.role === 'STUDENT' ? '/student' : '/tutor') ? 'primary.main' : 'inherit',
+                textDecoration: isActive(user.role === 'STUDENT' ? '/student' : '/tutor') ? 'underline' : 'none',
+                fontWeight: isActive(user.role === 'STUDENT' ? '/student' : '/tutor') ? 700 : 500
+              }}
+            >
+              Home
+            </Button>
+          )}
+
           {user && user.role === 'STUDENT' && (
             <Button
               color="inherit"
@@ -54,62 +65,21 @@ export default function Navbar() {
               Find a Tutor
             </Button>
           )}
-          {/* Marketplace dropdown: Assignments, My Jobs, My Bids */}
+
           {user && (
-            <Box>
-              <Button
-                id="marketplace-button"
-                aria-controls={Boolean(anchorElMarket) ? 'marketplace-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={Boolean(anchorElMarket) ? 'true' : undefined}
-                color="inherit"
-                onClick={(e) => setAnchorElMarket(e.currentTarget)}
-                endIcon={<ArrowDropDownIcon />}
-                sx={{
-                  color: isActive('/assignments') ? 'primary.main' : 'inherit',
-                  textDecoration: isActive('/assignments') ? 'underline' : 'none',
-                  fontWeight: isActive('/assignments') ? 700 : 500
-                }}
-              >
-                Marketplace
-              </Button>
-              <Menu
-                id="marketplace-menu"
-                anchorEl={anchorElMarket}
-                open={Boolean(anchorElMarket)}
-                onClose={() => setAnchorElMarket(null)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                MenuListProps={{ 'aria-labelledby': 'marketplace-button' }}
-              >
-                <MenuItem component={Link} to="/assignments" onClick={() => setAnchorElMarket(null)}>
-                  <ListItemIcon>
-                    <AssignmentIcon fontSize="small" />
-                  </ListItemIcon>
-                  Assignments
-                </MenuItem>
-                {/* My Jobs: visible for students (their posted assignments) */}
-                {user.role === 'STUDENT' && (
-                  <MenuItem component={Link} to="/assignments?view=my-jobs" onClick={() => setAnchorElMarket(null)}>
-                    <ListItemIcon>
-                      <WorkOutlineIcon fontSize="small" />
-                    </ListItemIcon>
-                    My Jobs
-                  </MenuItem>
-                )}
-                {/* My Bids: visible for tutors */}
-                {user.role === 'TUTOR' && (
-                  <MenuItem component={Link} to="/assignments?view=my-bids" onClick={() => setAnchorElMarket(null)}>
-                    <ListItemIcon>
-                      <GavelIcon fontSize="small" />
-                    </ListItemIcon>
-                    My Bids
-                  </MenuItem>
-                )}
-              </Menu>
-            </Box>
-          )}
-          {/* <Button
+            <Button
+              color="inherit"
+              component={Link}
+              to="/assignments"
+              sx={{
+                color: isActive('/assignments') ? 'primary.main' : 'inherit',
+                textDecoration: isActive('/assignments') ? 'underline' : 'none',
+                fontWeight: isActive('/assignments') ? 700 : 500
+              }}
+            >
+              {user && user.role === 'TUTOR' ? 'Available Jobs' : 'Post Assignment'}
+            </Button>
+          )}          {/* <Button
             color="inherit"
             component={Link}
             to="/become-tutor"

@@ -51,8 +51,8 @@ export default function Login() {
       if (role === 'STUDENT') {
         navigate('/student')
       } else if (role === 'TUTOR') {
-        // Tutors should see available jobs after login
-        navigate('/available-jobs')
+        // Tutors should land on their tutor home after login
+        navigate('/tutor')
       } else {
         navigate('/')
       }

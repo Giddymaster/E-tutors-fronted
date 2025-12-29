@@ -172,7 +172,9 @@ export default function Profile() {
               {user.role === 'TUTOR' && (
                 <Button component={Link} to="/tutor" variant="outlined">Tutor Dashboard</Button>
               )}
-              <Button component={Link} to="/tutors" variant="contained">Find a Tutor</Button>
+              {user.role === 'STUDENT' && (
+                <Button component={Link} to="/tutors" variant="contained">Find a Tutor</Button>
+              )}
             </Box>
 
             {/* Tutor profile management */}
@@ -209,7 +211,7 @@ export default function Profile() {
                   <TextField label="Bio / About" value={studentForm.bio} onChange={(e) => setStudentForm((s) => ({ ...s, bio: e.target.value }))} fullWidth multiline rows={4} />
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button variant="contained" onClick={handleSave} disabled={loading}>Save Profile</Button>
-                    <Button component={Link} to="/" variant="outlined">Home</Button>
+                    <Button component={Link} to="/student" variant="outlined">Home</Button>
                   </Box>
                   {message && <Typography color={message.startsWith('Failed') ? 'error' : 'success.main'}>{message}</Typography>}
                 </Stack>

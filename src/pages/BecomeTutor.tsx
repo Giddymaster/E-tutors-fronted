@@ -22,7 +22,9 @@ import {
   Paper,
   Card,
   CardContent,
-} from '@mui/material'
+  Alert,
+  CircularProgress,
+} from '@mui/material' 
 import { FcGoogle } from 'react-icons/fc'
 import AppleIcon from '@mui/icons-material/Apple'
 import DescriptionIcon from '@mui/icons-material/Description'
@@ -96,9 +98,12 @@ export default function BecomeTutor() {
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null)
   const [paymentCompleted, setPaymentCompleted] = useState(false)
   const [processingPayment, setProcessingPayment] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [creatingProfile, setCreatingProfile] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const navigate = useNavigate()
-  const { user, register } = useAuth()
+  const { user, register, login } = useAuth()
 
   useEffect(() => {
     if (user) {
@@ -176,12 +181,13 @@ export default function BecomeTutor() {
   }
 
   const processPayment = async (method: string) => {
+    if (!method) { setPaymentError('Select a payment method'); return }
+    setPaymentError(null)
     setProcessingPayment(true)
     try {
-      // Simulate payment processing
+      // Simulate payment processing (demo)
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      // In production, you would integrate with actual payment gateway
       const paymentData = {
         method,
         amount: 30,
@@ -190,18 +196,24 @@ export default function BecomeTutor() {
         timestamp: new Date().toISOString(),
       }
 
-      // Try to send to backend, but don't fail if it errors (for demo)
       try {
         await api.post('/payments/process', paymentData)
-      } catch {
-        // Fallback for demo - just mark as completed locally
+        setPaymentCompleted(true)
+        setSuccessMessage(`Payment of $30 via ${method} processed successfully!`)
+        setPaymentError(null)
+      } catch (err: any) {
+        // If backend doesn't expose payments (404), proceed in demo mode but warn the user
+        if (err?.response?.status === 404) {
+          setPaymentCompleted(true)
+          setPaymentError('Payment backend not configured; proceeding in demo mode.')
+          setSuccessMessage(`Payment processed locally (demo mode).`)
+        } else {
+          setPaymentError('Payment failed. Please try again.')
+          throw err
+        }
       }
-
-      setPaymentCompleted(true)
-      alert(`Payment of $30 via ${method} processed successfully!`)
     } catch (err) {
-      console.error('Payment error', err)
-      alert(`Payment failed. Please try again.`)
+      if (import.meta.env.DEV) console.error('Payment error', err)
     } finally {
       setProcessingPayment(false)
     }
@@ -213,9 +225,25 @@ export default function BecomeTutor() {
     if (!validate()) return
 
     try {
+      setCreatingProfile(true)
       if (!user) {
         const name = `${firstName.trim()} ${lastName.trim()}`.trim()
-        await register(name, email, password, 'TUTOR')
+        try {
+          await register(name, email, password, 'TUTOR')
+        } catch (regErr: any) {
+          const msg = regErr?.response?.data?.error || regErr?.message || ''
+          if (regErr?.response?.status === 400 && /email.*in use/i.test(String(msg))) {
+            // Email exists: try logging in with provided password as a convenience.
+            try {
+              await login(email, password)
+            } catch (loginErr: any) {
+              setError('Email already in use. Please login or reset your password.')
+              return
+            }
+          } else {
+            throw regErr
+          }
+        }
       }
 
       const body = {
@@ -235,10 +263,15 @@ export default function BecomeTutor() {
       }
 
       const res = await api.post('/tutors', body)
-      if (res && res.data && res.data.tutor) navigate('/assignments')
+      if (res && res.data && res.data.tutor) {
+        setSuccessMessage('Profile created successfully')
+        setTimeout(() => navigate('/assignments?view=recommended'), 900)
+      }
     } catch (err: any) {
-      console.error('Become tutor error', err)
-      setError(err?.message || (err?.response?.data?.error ?? 'Failed to create tutor profile'))
+      if (import.meta.env.DEV) console.error('Become tutor error', err)
+      setError(err?.response?.data?.error || err?.message || 'Failed to create tutor profile')
+    } finally {
+      setCreatingProfile(false)
     }
   }
 
@@ -265,6 +298,13 @@ export default function BecomeTutor() {
 
             <Box component="form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2 }}>
               {error && <Typography color="error">{error}</Typography>}
+              {error && /email already in use/i.test(String(error)) && (
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button variant="outlined" onClick={() => navigate(`/login?email=${encodeURIComponent(email)}`)}>Go to Login</Button>
+                  <Button variant="text" onClick={() => navigate(`/forgot-password?email=${encodeURIComponent(email)}`)}>Forgot password</Button>
+                </Box>
+              )}
+              {successMessage && <Alert severity="success">{successMessage}</Alert> }
 
               {/* Account Information */}
               <Typography variant="h6">Account Information</Typography>
@@ -475,9 +515,10 @@ export default function BecomeTutor() {
                       {/* PayPal */}
                       <Grid item xs={12} sm={6} md={3}>
                         <Card
-                          onClick={() => setPaymentMethod('PayPal')}
+                          onClick={() => !processingPayment && setPaymentMethod('PayPal')}
                           sx={{
-                            cursor: 'pointer',
+                            cursor: processingPayment ? 'not-allowed' : 'pointer',
+                            opacity: processingPayment ? 0.6 : 1,
                             border: paymentMethod === 'PayPal' ? '3px solid #0070ba' : '2px solid #ddd',
                             backgroundColor: paymentMethod === 'PayPal' ? '#f0f7ff' : 'white',
                             transition: 'all 0.2s ease',
@@ -501,9 +542,10 @@ export default function BecomeTutor() {
                       {/* Credit Card */}
                       <Grid item xs={12} sm={6} md={3}>
                         <Card
-                          onClick={() => setPaymentMethod('Credit Card')}
+                          onClick={() => !processingPayment && setPaymentMethod('Credit Card')}
                           sx={{
-                            cursor: 'pointer',
+                            cursor: processingPayment ? 'not-allowed' : 'pointer',
+                            opacity: processingPayment ? 0.6 : 1,
                             border: paymentMethod === 'Credit Card' ? '3px solid #1976d2' : '2px solid #ddd',
                             backgroundColor: paymentMethod === 'Credit Card' ? '#f0f7ff' : 'white',
                             transition: 'all 0.2s ease',
@@ -527,9 +569,10 @@ export default function BecomeTutor() {
                       {/* Stripe */}
                       <Grid item xs={12} sm={6} md={4}>
                         <Card
-                          onClick={() => setPaymentMethod('Stripe')}
+                          onClick={() => !processingPayment && setPaymentMethod('Stripe')}
                           sx={{
-                            cursor: 'pointer',
+                            cursor: processingPayment ? 'not-allowed' : 'pointer',
+                            opacity: processingPayment ? 0.6 : 1,
                             border: paymentMethod === 'Stripe' ? '3px solid #6772e5' : '2px solid #ddd',
                             backgroundColor: paymentMethod === 'Stripe' ? '#f5f3ff' : 'white',
                             transition: 'all 0.2s ease',
@@ -551,6 +594,8 @@ export default function BecomeTutor() {
                       </Grid>
                     </Grid>
 
+                    {paymentError && <Alert severity="warning" sx={{ mt: 1 }}>{paymentError}</Alert>}
+                    {successMessage && <Alert severity="success" sx={{ mt: 1 }}>{successMessage}</Alert>}
                     {paymentMethod && (
                       <Button
                         variant="contained"
@@ -559,6 +604,7 @@ export default function BecomeTutor() {
                         size="large"
                         onClick={() => processPayment(paymentMethod)}
                         disabled={processingPayment}
+                        startIcon={processingPayment ? <CircularProgress color="inherit" size={18} /> : null}
                         sx={{ mt: 2 }}
                       >
                         {processingPayment ? 'Processing Payment...' : `Pay $30 with ${paymentMethod}`}
@@ -568,7 +614,7 @@ export default function BecomeTutor() {
                       <Typography color="error" variant="body2" sx={{ mt: 1 }}>
                         {errors.payment}
                       </Typography>
-                    )}
+                    )} 
                   </Box>
                 ) : (
                   <Box sx={{ p: 2, backgroundColor: '#e8f5e9', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -589,27 +635,7 @@ export default function BecomeTutor() {
 
               <Divider sx={{ my: 2 }} />
 
-              {/* Security & Verification */}
-              <Typography variant="h6">Security & Verification</Typography>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} sm={6}>
-                  <Button variant="outlined" onClick={() => setEmailVerified(true)} startIcon={<VerifiedUserIcon />}>Send Email Verification</Button>
-                  {emailVerified && <Typography variant="body2" color="success.main">Email verified</Typography>}
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <TextField label="Phone OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
-                    <Button variant="outlined" onClick={sendOtp}>Send OTP</Button>
-                    <Button variant="contained" onClick={verifyOtp}>Verify</Button>
-                  </Stack>
-                  {phoneVerified && <Typography variant="body2" color="success.main">Phone verified</Typography>}
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel control={<Checkbox checked={twoFactor} onChange={(e) => setTwoFactor(e.target.checked)} />} label="Enable two-factor authentication (optional)" />
-                </Grid>
-              </Grid>
-
-              <Button variant="contained" type="submit" fullWidth sx={{ mt: 2 }}>Create Profile</Button>
+              <Button variant="contained" type="submit" fullWidth sx={{ mt: 2 }} disabled={creatingProfile} startIcon={creatingProfile ? <CircularProgress size={18} color="inherit" /> : null}>{creatingProfile ? 'Creating profile...' : 'Create Profile'}</Button>
             </Box>
           </Box>
         </Grid>
