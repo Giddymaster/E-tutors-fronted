@@ -157,7 +157,8 @@ export default function Register() {
           error={!!errors.phone}
           helperText={errors.phone || 'Include country code, e.g. +2547...'}
           fullWidth
-          inputProps={{ pattern: '\\+?[0-9\\s-]{7,15}', inputMode: 'tel' }}
+          // Safer pattern: avoid \s in HTML `pattern` and keep '-' at the end of the class
+          inputProps={{ pattern: '\\+?[0-9 -]{7,15}', inputMode: 'tel' }}
         />
         <TextField
           label="Email"
