@@ -26,7 +26,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchMe = async () => {
     try {
-      // If we don't have an access token, try refreshing using HttpOnly cookie
       let token = getAuthToken()
       if (!token) {
         try {
@@ -34,7 +33,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           token = r.data?.token
           if (token) setAuthToken(token)
         } catch (err) {
-          // refresh failed or no cookie set
           setLoading(false)
           return
         }
@@ -53,7 +51,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     fetchMe()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const login = async (email: string, password: string) => {
