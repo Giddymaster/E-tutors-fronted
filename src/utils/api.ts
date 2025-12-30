@@ -1,38 +1,23 @@
 /// <reference types="vite/client" />
 import axios from 'axios'
 
-interface ImportMetaEnv {
-  readonly VITE_API_BASE?: string
-}
+const API_BASE_URL = 'http://localhost:4000/api'  // Make sure this points to your backend
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv
-}
-
-const rawApiBase = (import.meta.env.VITE_API_BASE as string) || ''
-// Normalize to ensure a consistent base that always ends with '/api'
-const API_BASE = ((): string => {
-  if (!rawApiBase) return '/api'
-  const trimmed = rawApiBase.trim().replace(/\/$/, '')
-  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`
-})()
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true, // Important for cookies
+})
 
 // TEMP DEBUG: log the computed API base so we can confirm the value in deployed builds
 if (!(import.meta.env as any).DEV) {
   // eslint-disable-next-line no-console
-  console.debug('[api] computed API_BASE =', API_BASE)
+  console.debug('[api] computed API_BASE =', API_BASE_URL)
 }
-
-const api = axios.create({
-  baseURL: API_BASE,
-  timeout: 10000, // 10 seconds
-  withCredentials: true,
-})
 
 // Helpful debug in development so you can see which base URL is in use
 if ((import.meta.env as any).DEV) {
   // eslint-disable-next-line no-console
-  console.debug('[api] baseURL =', API_BASE)
+  console.debug('[api] baseURL =', API_BASE_URL)
 }
 
 // Attach token from localStorage to each request in a type-safe way

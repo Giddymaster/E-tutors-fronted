@@ -32,17 +32,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const r = await api.post('/auth/refresh')
           token = r.data?.token
           if (token) setAuthToken(token)
-        } catch (err) {
+        } catch (err: any) {
+          // 401 is expected when user is not logged in - suppress silently
+          if (err.response?.status === 401) {
+            setLoading(false)
+            return
+          }
+          // Only log other errors
+          console.error('Refresh token error:', err)
           setLoading(false)
           return
         }
       }
 
-      const res = await api.get('/auth/me')
-      setUser(res.data.user)
-    } catch (err) {
+      if (token) {
+        const res = await api.get('/auth/me')
+        setUser(res.data.user)
+      }
+    } catch (err: any) {
+      // Suppress 401 here too
+      if (err.response?.status === 401) {
+        setLoading(false)
+        return
+      }
       console.error('fetchMe error', err)
-      apiLogout()
+      logout()
       setUser(null)
     } finally {
       setLoading(false)
@@ -55,18 +69,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     const res = await api.post('/auth/login', { email, password })
-    const { token, user } = res.data
+    const { token } = res.data
     setAuthToken(token)
-    setUser(user)
-    return user
+    await fetchMe()  // Fetch updated user data
   }
 
   const register = async (name: string, email: string, password: string, role: Role = 'STUDENT') => {
-  const res = await api.post('/auth/register', { name, email, password, role })
-  const { token, user } = res.data
-  setAuthToken(token)
-  setUser(user)
-  return user
+    const res = await api.post('/auth/register', { name, email, password, role })
+    const { token } = res.data
+    setAuthToken(token)
+    await fetchMe()  // Fetch updated user data
   }
 
   const logout = () => {
