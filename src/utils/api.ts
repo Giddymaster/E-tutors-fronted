@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:4000/api'  // Make sure this points to your backend
+const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,13 +9,13 @@ const api = axios.create({
 })
 
 // TEMP DEBUG: log the computed API base so we can confirm the value in deployed builds
-if (!(import.meta.env as any).DEV) {
+if (!import.meta.env.DEV) {
   // eslint-disable-next-line no-console
   console.debug('[api] computed API_BASE =', API_BASE_URL)
 }
 
 // Helpful debug in development so you can see which base URL is in use
-if ((import.meta.env as any).DEV) {
+if (import.meta.env.DEV) {
   // eslint-disable-next-line no-console
   console.debug('[api] baseURL =', API_BASE_URL)
 }
