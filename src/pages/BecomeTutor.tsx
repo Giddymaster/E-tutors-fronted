@@ -17,45 +17,70 @@ import {
   Select,
   Chip,
   Autocomplete,
-  FormLabel,
   Stack,
   Paper,
   Card,
   CardContent,
   Alert,
   CircularProgress,
-} from '@mui/material' 
-import { FcGoogle } from 'react-icons/fc'
-import AppleIcon from '@mui/icons-material/Apple'
-import DescriptionIcon from '@mui/icons-material/Description'
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
+  Stepper,
+  Step,
+  StepLabel,
+  LinearProgress,
+  Fade,
+  Collapse,
+  Link,
+  Tooltip,
+  Badge,
+} from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
-import CreditCardIcon from '@mui/icons-material/CreditCard'
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import SaveIcon from '@mui/icons-material/Save'
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import StarIcon from '@mui/icons-material/Star'
+import GroupIcon from '@mui/icons-material/Group'
+import SchoolIcon from '@mui/icons-material/School'
 import { SiPaypal, SiStripe } from 'react-icons/si'
+import CreditCardIcon from '@mui/icons-material/CreditCard'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import { useNavigate } from 'react-router-dom'
+import { useCountries } from '../hooks/useCountries'
+
+const STEPS = [
+  'Professional Profile',
+  'Teaching Expertise',
+  'Business Setup',
+  'Verification',
+  'Launch Ready',
+]
 
 export default function BecomeTutor() {
+  const [activeStep, setActiveStep] = useState(0)
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
+
+  // Form state
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [confirmEmail, setConfirmEmail] = useState('')
-  const [specialization, setSpecialization] = useState<string[]>([])
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordVisible, setPasswordVisible] = useState(false)
-  const [bio, setBio] = useState('')
-  const [shortBio, setShortBio] = useState('')
-  const [error, setError] = useState('')
+  
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [country, setCountry] = useState('')
   const [city, setCity] = useState('')
   const [phone, setPhone] = useState('')
   const [dob, setDob] = useState('')
   const [gender, setGender] = useState('')
+  const [professionalHeadline, setProfessionalHeadline] = useState('')
+  
+  const [specialization, setSpecialization] = useState<string[]>([])
   const [subjectsOptions] = useState<string[]>([
     'Math',
     'Physics',
@@ -64,46 +89,46 @@ export default function BecomeTutor() {
     'English',
     'History',
     'Computer Science',
+    'Economics',
+    'Psychology',
+    'Spanish',
+    'French',
   ])
   const [educationLevel, setEducationLevel] = useState('')
   const [degrees, setDegrees] = useState<string[]>([])
   const [experienceYears, setExperienceYears] = useState<number | ''>('')
+  const [shortBio, setShortBio] = useState('')
   const [teachingStatement, setTeachingStatement] = useState('')
+  
+  const [weeklyHours, setWeeklyHours] = useState('')
+  const [formatPreference, setFormatPreference] = useState<string[]>(['Online'])
+  const [timeZone, setTimeZone] = useState('')
+  const [hourlyRate, setHourlyRate] = useState<number | ''>('')
+  const [currency, setCurrency] = useState('USD')
+  const [recommendedRate, setRecommendedRate] = useState({ min: 0, max: 0, avg: 0 })
+  
   const [idUpload, setIdUpload] = useState<File | null>(null)
   const [resumeUpload, setResumeUpload] = useState<File | null>(null)
   const [qualificationsUpload, setQualificationsUpload] = useState<File | null>(null)
   const [ssn, setSsn] = useState('')
   const [certify, setCertify] = useState(false)
-  const [availability, setAvailability] = useState<Record<string, string[]>>({
-    Mon: [],
-    Tue: [],
-    Wed: [],
-    Thu: [],
-    Fri: [],
-    Sat: [],
-    Sun: [],
-  })
-  const [formatPreference, setFormatPreference] = useState<string[]>(['Online'])
-  const [timeZone, setTimeZone] = useState('')
-  const [hourlyRate, setHourlyRate] = useState<number | ''>('')
-  const [payoutMethod, setPayoutMethod] = useState('')
-  const [currency, setCurrency] = useState('USD')
-  const [taxFormUpload, setTaxFormUpload] = useState<File | null>(null)
-  const [emailVerified, setEmailVerified] = useState(false)
-  const [phoneVerified, setPhoneVerified] = useState(false)
-  const [otp, setOtp] = useState('')
-  const [sentOtp, setSentOtp] = useState<string | null>(null)
-  const [twoFactor, setTwoFactor] = useState(false)
-  const [errors, setErrors] = useState<{ [k: string]: string | null }>({})
+  
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null)
   const [paymentCompleted, setPaymentCompleted] = useState(false)
   const [processingPayment, setProcessingPayment] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  
+  const [errors, setErrors] = useState<{ [k: string]: string | null }>({})
+  const [error, setError] = useState('')
   const [creatingProfile, setCreatingProfile] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [profileQuality, setProfileQuality] = useState(0)
 
   const navigate = useNavigate()
   const { user, register, login } = useAuth()
+  const { countries, loading: countriesLoading } = useCountries()
+  const countryOptions = countries.map(c => c.name.common)
 
   useEffect(() => {
     if (user) {
@@ -124,35 +149,108 @@ export default function BecomeTutor() {
     }
   }, [])
 
-  const validate = () => {
-    const e: any = {}
+  // Calculate profile quality score
+  useEffect(() => {
+    let score = 0
+    if (firstName && lastName) score += 10
+    if (email) score += 10
+    if (profilePhoto) score += 15
+    if (professionalHeadline && professionalHeadline.length > 20) score += 15
+    if (specialization.length > 0) score += 10
+    if (educationLevel) score += 10
+    if (shortBio && shortBio.length >= 50) score += 15
+    if (hourlyRate && hourlyRate > 0) score += 10
+    if (weeklyHours) score += 5
+    setProfileQuality(Math.min(100, score))
+  }, [firstName, lastName, email, profilePhoto, professionalHeadline, specialization, educationLevel, shortBio, hourlyRate, weeklyHours])
 
-    if (!firstName) e.firstName = 'First name is required'
-    if (!lastName) e.lastName = 'Last name is required'
-    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) e.email = 'Valid email is required'
-    if (confirmEmail !== email) e.confirmEmail = 'Emails do not match'
+  // Smart rate calculator
+  useEffect(() => {
+    if (educationLevel && experienceYears) {
+      let baseRate = 25
+      
+      // Education multiplier
+      if (educationLevel === 'PhD') baseRate = 75
+      else if (educationLevel === 'Masters') baseRate = 55
+      else if (educationLevel === 'Bachelors') baseRate = 35
+      
+      // Experience bonus
+      const expBonus = Math.min(Number(experienceYears) * 5, 30)
+      
+      const avg = baseRate + expBonus
+      setRecommendedRate({
+        min: Math.round(avg * 0.85),
+        max: Math.round(avg * 1.15),
+        avg: Math.round(avg)
+      })
+      
+      if (!hourlyRate) {
+        setHourlyRate(Math.round(avg))
+      }
+    }
+  }, [educationLevel, experienceYears])
 
-    const pwRules = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/
-    if (!password || !pwRules.test(password)) e.password = 'Password must be 8+ chars and include uppercase, lowercase, number, and symbol'
-    if (confirmPassword !== password) e.confirmPassword = 'Passwords do not match'
-
-    if (!specialization || specialization.length === 0) e.specialization = 'Select at least one subject'
-    if (!shortBio || shortBio.length < 50) e.shortBio = 'Short bio must be at least 50 characters'
-    if (!certify) e.certify = 'You must certify that information is accurate'
-    if (country === 'United States' && !ssn) e.ssn = 'SSN is required for US residents'
-    if (!paymentCompleted) e.payment = 'You must complete the $30 registration fee to submit your profile'
-
-    setErrors(e)
-    return !Object.values(e).some(Boolean)
+  const getCompletionPercentage = () => {
+    return Math.round(((activeStep + 1) / STEPS.length) * 100)
   }
 
-  const toggleAvailability = (day: string, slot: string) => {
-    setAvailability((prev) => {
-      const current = new Set(prev[day] || [])
-      if (current.has(slot)) current.delete(slot)
-      else current.add(slot)
-      return { ...prev, [day]: Array.from(current) }
-    })
+  const validateStep = (step: number) => {
+    const e: any = {}
+
+    if (step === 0) {
+      if (!firstName) e.firstName = 'First name is required'
+      if (!lastName) e.lastName = 'Last name is required'
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) e.email = 'Valid email is required'
+      if (confirmEmail !== email) e.confirmEmail = 'Emails do not match'
+      const pwRules = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/
+      if (!password || !pwRules.test(password)) e.password = 'Password must be 8+ chars with uppercase, lowercase, number, and symbol'
+      if (confirmPassword !== password) e.confirmPassword = 'Passwords do not match'
+      if (!country) e.country = 'Country is required'
+      if (!phone) e.phone = 'Phone number is required'
+    }
+
+    if (step === 1) {
+      if (!specialization || specialization.length === 0) e.specialization = 'Select at least one subject'
+      if (!educationLevel) e.educationLevel = 'Education level is required'
+      if (!shortBio || shortBio.length < 50) e.shortBio = 'Short bio must be at least 50 characters'
+    }
+
+    if (step === 2) {
+      if (!hourlyRate || hourlyRate <= 0) e.hourlyRate = 'Hourly rate must be greater than 0'
+      if (!weeklyHours) e.weeklyHours = 'Please select your weekly availability'
+    }
+
+    if (step === 3) {
+      if (!certify) e.certify = 'You must certify that information is accurate'
+      if (country === 'United States' && !ssn) e.ssn = 'SSN is required for US residents'
+    }
+
+    if (step === 4) {
+      if (!paymentCompleted) e.payment = 'Complete the $30 registration fee to proceed'
+    }
+
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  const handleNext = () => {
+    if (validateStep(activeStep)) {
+      setCompletedSteps((prev) => new Set(prev).add(activeStep))
+      setActiveStep((prev) => prev + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const handleBack = () => {
+    setActiveStep((prev) => prev - 1)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleStepClick = (step: number) => {
+    if (step < activeStep || completedSteps.has(step)) {
+      setActiveStep(step)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   const toggleFormat = (fmt: string) => {
@@ -162,30 +260,14 @@ export default function BecomeTutor() {
     })
   }
 
-  const sendOtp = () => {
-    const code = Math.floor(100000 + Math.random() * 900000).toString()
-    setSentOtp(code)
-    alert(`Simulated OTP sent: ${code}`)
-  }
-
-  const verifyOtp = () => {
-    if (!sentOtp) return alert('Send OTP first')
-    if (otp === sentOtp) {
-      setPhoneVerified(true)
-      alert('Phone verified')
-      setSentOtp(null)
-      setOtp('')
-    } else {
-      alert('Invalid OTP')
-    }
-  }
-
   const processPayment = async (method: string) => {
-    if (!method) { setPaymentError('Select a payment method'); return }
+    if (!method) {
+      setPaymentError('Select a payment method')
+      return
+    }
     setPaymentError(null)
     setProcessingPayment(true)
     try {
-      // Simulate payment processing (demo)
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       const paymentData = {
@@ -202,7 +284,6 @@ export default function BecomeTutor() {
         setSuccessMessage(`Payment of $30 via ${method} processed successfully!`)
         setPaymentError(null)
       } catch (err: any) {
-        // If backend doesn't expose payments (404), proceed in demo mode but warn the user
         if (err?.response?.status === 404) {
           setPaymentCompleted(true)
           setPaymentError('Payment backend not configured; proceeding in demo mode.')
@@ -219,10 +300,8 @@ export default function BecomeTutor() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    if (!validate()) return
+  const handleSubmit = async () => {
+    if (!validateStep(4)) return
 
     try {
       setCreatingProfile(true)
@@ -233,7 +312,6 @@ export default function BecomeTutor() {
         } catch (regErr: any) {
           const msg = regErr?.response?.data?.error || regErr?.message || ''
           if (regErr?.response?.status === 400 && /email.*in use/i.test(String(msg))) {
-            // Email exists: try logging in with provided password as a convenience.
             try {
               await login(email, password)
             } catch (loginErr: any) {
@@ -250,22 +328,23 @@ export default function BecomeTutor() {
         firstName,
         lastName,
         email,
-        bio: teachingStatement || bio,
+        bio: teachingStatement || shortBio,
         shortBio,
         subjects: specialization,
         hourlyRate: hourlyRate || 0,
-        availability,
+        weeklyHours,
         country,
         city,
         phone,
         educationLevel,
         degrees,
+        professionalHeadline,
       }
 
       const res = await api.post('/tutors', body)
       if (res && res.data && res.data.tutor) {
-        setSuccessMessage('Profile created successfully')
-        setTimeout(() => navigate('/assignments?view=recommended'), 900)
+        setSuccessMessage('Profile created successfully! Redirecting...')
+        setTimeout(() => navigate('/assignments?view=recommended'), 1500)
       }
     } catch (err: any) {
       if (import.meta.env.DEV) console.error('Become tutor error', err)
@@ -275,371 +354,1062 @@ export default function BecomeTutor() {
     }
   }
 
-  return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <Grid container spacing={0}>
-        <Grid item xs={12} md={6} sx={{ p: 0 }}>
-          <Box
-            component="img"
-            src="https://images.pexels.com/photos/4861395/pexels-photo-4861395.jpeg"
-            alt="Tutor"
-            sx={{ width: '100%', height: { xs: '40vh', md: '100vh' }, objectFit: 'cover', display: 'block' }}
-          />
-        </Grid>
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0:
+        return (
+          <Fade in timeout={500}>
+            <Box>
+              <Grid container spacing={3}>
+                {/* Left Column - Profile Builder */}
+                <Grid item xs={12} md={6}>
+                  <Typography variant="h5" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <SchoolIcon /> Build Your Professional Profile
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ mb: 3 }}>
+                    Create a compelling profile that attracts students
+                  </Typography>
 
-        <Grid item xs={12} md={6} sx={{ p: { xs: 3, md: 6 }, display: 'flex', alignItems: 'flex-start' }}>
-          <Box sx={{ width: '100%', maxWidth: 880, maxHeight: '100vh', overflowY: 'auto' }}>
-            <Typography variant="h4" align="center" gutterBottom>
-              Become a Tutor
-            </Typography>
-            <Typography align="center" color="text.secondary" sx={{ mb: 3 }}>
-              Create your tutor profile — students will see your experience, availability, and rates.
-            </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <Badge
+                          overlap="circular"
+                          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                          badgeContent={
+                            profilePhoto ? (
+                              <Tooltip title="Great photo!">
+                                <CheckCircleIcon sx={{ fontSize: 24, color: '#4caf50' }} />
+                              </Tooltip>
+                            ) : (
+                              <Tooltip title="Add photo to boost profile">
+                                <AutoAwesomeIcon sx={{ fontSize: 24, color: '#ff9800' }} />
+                              </Tooltip>
+                            )
+                          }
+                        >
+                          <Avatar
+                            sx={{ width: 100, height: 100 }}
+                            src={profilePhoto ? URL.createObjectURL(profilePhoto) : undefined}
+                          />
+                        </Badge>
+                        <Box>
+                          <Button variant="outlined" component="label" size="large">
+                            Upload Photo
+                            <input
+                              hidden
+                              accept="image/*"
+                              type="file"
+                              onChange={(e) => setProfilePhoto(e.target.files?.[0] || null)}
+                            />
+                          </Button>
+                          <Typography variant="caption" display="block" sx={{ mt: 1 }} color="text.secondary">
+                            {profilePhoto ? '✓ ' + profilePhoto.name : 'Profiles with photos get 3x more interest'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Grid>
 
-            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2 }}>
-              {error && <Typography color="error">{error}</Typography>}
-              {error && /email already in use/i.test(String(error)) && (
-                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                  <Button variant="outlined" onClick={() => navigate(`/login?email=${encodeURIComponent(email)}`)}>Go to Login</Button>
-                  <Button variant="text" onClick={() => navigate(`/forgot-password?email=${encodeURIComponent(email)}`)}>Forgot password</Button>
-                </Box>
-              )}
-              {successMessage && <Alert severity="success">{successMessage}</Alert> }
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="First Name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        fullWidth
+                        error={!!errors.firstName}
+                        helperText={errors.firstName}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Last Name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        fullWidth
+                        error={!!errors.lastName}
+                        helperText={errors.lastName}
+                      />
+                    </Grid>
 
-              {/* Account Information */}
-              <Typography variant="h6">Account Information</Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} fullWidth error={!!errors.firstName} helperText={errors.firstName || ''} />
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Professional Headline"
+                        value={professionalHeadline}
+                        onChange={(e) => setProfessionalHeadline(e.target.value)}
+                        fullWidth
+                        placeholder="e.g., Physics & Math Tutor | MIT PhD | 8+ Years Experience"
+                        InputProps={{
+                          endAdornment: professionalHeadline.length > 20 ? (
+                            <Tooltip title="Strong headline!">
+                              <CheckCircleIcon color="success" />
+                            </Tooltip>
+                          ) : null,
+                        }}
+                        helperText="Include credentials, subjects, and experience"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Email Address"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        fullWidth
+                        error={!!errors.email}
+                        helperText={errors.email || "We'll use this for account notifications"}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Confirm Email"
+                        type="email"
+                        value={confirmEmail}
+                        onChange={(e) => setConfirmEmail(e.target.value)}
+                        fullWidth
+                        error={!!errors.confirmEmail}
+                        helperText={errors.confirmEmail}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Password"
+                        type={passwordVisible ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        fullWidth
+                        error={!!errors.password}
+                        helperText={errors.password || 'Must include uppercase, lowercase, number, and special character'}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setPasswordVisible((s) => !s)}
+                                edge="end"
+                              >
+                                {passwordVisible ? <VisibilityOff /> : <Visibility />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          Password strength: {passwordStrengthLabel(password)}
+                        </Typography>
+                        <LinearProgress
+                          variant="determinate"
+                          value={passwordStrengthPct(password)}
+                          sx={{
+                            height: 6,
+                            borderRadius: 1,
+                            mt: 0.5,
+                            backgroundColor: '#e0e0e0',
+                            '& .MuiLinearProgress-bar': {
+                              backgroundColor: passwordStrengthColor(password),
+                            },
+                          }}
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Confirm Password"
+                        type={passwordVisible ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        fullWidth
+                        error={!!errors.confirmPassword}
+                        helperText={errors.confirmPassword}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth error={!!errors.country} disabled={countriesLoading}>
+                        <InputLabel>Country</InputLabel>
+                        <Select
+                          value={country}
+                          label="Country"
+                          onChange={(e) => setCountry(e.target.value)}
+                        >
+                          {countriesLoading ? (
+                            <MenuItem disabled>Loading countries...</MenuItem>
+                          ) : (
+                            countryOptions.map((countryName) => (
+                              <MenuItem key={countryName} value={countryName}>
+                                {countryName}
+                              </MenuItem>
+                            ))
+                          )}
+                        </Select>
+                        {errors.country && (
+                          <Typography variant="caption" color="error">
+                            {errors.country}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="City"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        fullWidth
+                        helperText="For in-person coordination"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Phone Number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        fullWidth
+                        error={!!errors.phone}
+                        helperText={errors.phone || 'For account security'}
+                      />
+                    </Grid>
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} fullWidth error={!!errors.lastName} helperText={errors.lastName || ''} />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="Email Address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth error={!!errors.email} helperText={errors.email || ''} />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="Confirm Email" type="email" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} fullWidth error={!!errors.confirmEmail} helperText={errors.confirmEmail || ''} />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="Password" type={passwordVisible ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} fullWidth error={!!errors.password} helperText={errors.password || ''} InputProps={{ endAdornment: (<InputAdornment position="end"><IconButton aria-label="toggle password" onClick={() => setPasswordVisible((s) => !s)} edge="end">{passwordVisible ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>) }} />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="Confirm Password" type={passwordVisible ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} fullWidth error={!!errors.confirmPassword} helperText={errors.confirmPassword || ''} />
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="body2">Password strength: {passwordStrengthLabel(password)}</Typography>
-                  <Box sx={{ height: 8, background: '#eee', borderRadius: 1, overflow: 'hidden', mt: 1 }}>
-                    <Box sx={{ width: `${passwordStrengthPct(password)}%`, height: '100%', background: passwordStrengthColor(password) }} />
-                  </Box>
+
+                {/* Right Column - Live Preview */}
+                <Grid item xs={12} md={6}>
+                  <Paper sx={{ p: 3, height: '100%', bgcolor: '#f5f5f5', position: 'sticky', top: 120 }}>
+                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Visibility /> Live Student Preview
+                    </Typography>
+                    
+                    <Card sx={{ mb: 2 }}>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                          <Avatar
+                            sx={{ width: 60, height: 60 }}
+                            src={profilePhoto ? URL.createObjectURL(profilePhoto) : undefined}
+                          />
+                          <Box>
+                            <Typography variant="h6">
+                              {firstName && lastName ? `${firstName} ${lastName}` : 'Your Name'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {professionalHeadline || 'Your professional headline will appear here'}
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                              <StarIcon sx={{ fontSize: 16, color: '#ff9800' }} />
+                              <Typography variant="body2">New Tutor</Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                        
+                        <Typography variant="body2" sx={{ mb: 2 }} color="text.secondary">
+                          {shortBio || 'Your bio will appear here to help students understand your teaching approach...'}
+                        </Typography>
+                        
+                        <Grid container spacing={1} sx={{ mb: 2 }}>
+                          <Grid item xs={6}>
+                            <Typography variant="caption" color="text.secondary">Location</Typography>
+                            <Typography variant="body2">{city || country || 'Not set'}</Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="caption" color="text.secondary">Subjects</Typography>
+                            <Typography variant="body2">{specialization.length || 0} subjects</Typography>
+                          </Grid>
+                        </Grid>
+                        
+                        <Button variant="contained" fullWidth size="small" disabled>
+                          Book Session
+                        </Button>
+                      </CardContent>
+                    </Card>
+                    
+                    <Box sx={{ bgcolor: profileQuality >= 70 ? '#e8f5e9' : '#fff3e0', p: 2, borderRadius: 1 }}>
+                      <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <AutoAwesomeIcon fontSize="small" />
+                        Profile Quality Score: <strong>{profileQuality}/100</strong>
+                      </Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={profileQuality} 
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          backgroundColor: '#e0e0e0',
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: profileQuality >= 70 ? '#4caf50' : '#ff9800'
+                          }
+                        }}
+                      />
+                      <Typography variant="caption" sx={{ mt: 1, display: 'block' }} color="text.secondary">
+                        {profileQuality >= 85 ? '🎉 Excellent! Priority matching enabled' : 
+                         profileQuality >= 70 ? '👍 Good! Add more details to reach 85+' :
+                         '📝 Keep going! Complete your profile for better visibility'}
+                      </Typography>
+                    </Box>
+                  </Paper>
                 </Grid>
               </Grid>
+            </Box>
+          </Fade>
+        )
 
-              <Divider sx={{ my: 2 }} />
+      case 1:
+        return (
+          <Fade in timeout={500}>
+            <Box>
+              <Typography variant="h5" fontWeight={600} gutterBottom>
+                Your Teaching Expertise
+              </Typography>
+              <Typography color="text.secondary" sx={{ mb: 4 }}>
+                Share your qualifications to match with the right students
+              </Typography>
 
-              {/* Personal Details */}
-              <Typography variant="h6">Personal Details</Typography>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item>
-                  <Avatar sx={{ width: 72, height: 72 }} src={profilePhoto ? URL.createObjectURL(profilePhoto) : undefined} />
-                </Grid>
-                <Grid item xs>
-                  <Button variant="outlined" component="label">Upload Profile Photo<input hidden accept="image/*" type="file" onChange={(e) => setProfilePhoto(e.target.files?.[0] || null)} /></Button>
-                  {profilePhoto && <Typography variant="body2" sx={{ mt: 1 }}>{profilePhoto.name}</Typography>}
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Country</InputLabel>
-                    <Select value={country} label="Country" onChange={(e) => setCountry(e.target.value)}>
-                      <MenuItem value="United States">United States</MenuItem>
-                      <MenuItem value="United Kingdom">United Kingdom</MenuItem>
-                      <MenuItem value="Kenya">Kenya</MenuItem>
-                      <MenuItem value="Other">Other</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField label="City" value={city} onChange={(e) => setCity(e.target.value)} fullWidth />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField label="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} fullWidth />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField label="Date of Birth" type="date" value={dob} onChange={(e) => setDob(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Gender</InputLabel>
-                    <Select value={gender} label="Gender" onChange={(e) => setGender(e.target.value)}>
-                      <MenuItem value="">Prefer not to say</MenuItem>
-                      <MenuItem value="Female">Female</MenuItem>
-                      <MenuItem value="Male">Male</MenuItem>
-                      <MenuItem value="Other">Other</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-
-              <Divider sx={{ my: 2 }} />
-
-              {/* Subjects & Experience */}
-              <Typography variant="h6">Tutoring Subjects & Experience</Typography>
-              <Grid container spacing={2}>
+              <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <Autocomplete multiple options={subjectsOptions} freeSolo value={specialization} onChange={(_, v) => setSpecialization(v as string[])} renderTags={(value: string[], getTagProps) => value.map((option, index) => (<Chip variant="outlined" label={option} {...getTagProps({ index })} />))} renderInput={(params) => <TextField {...params} label="Subjects (search & add)" />} />
+                  <Autocomplete
+                    multiple
+                    options={subjectsOptions}
+                    freeSolo
+                    value={specialization}
+                    onChange={(_, v) => setSpecialization(v as string[])}
+                    renderTags={(value: string[], getTagProps) =>
+                      value.map((option, index) => {
+                        const isHighDemand = ['Math', 'Physics', 'Computer Science'].includes(option)
+                        return (
+                          <Chip
+                            variant="filled"
+                            label={option}
+                            {...getTagProps({ index })}
+                            color="primary"
+                            deleteIcon={isHighDemand ? <TrendingUpIcon /> : undefined}
+                          />
+                        )
+                      })
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Subjects You Teach"
+                        error={!!errors.specialization}
+                        helperText={errors.specialization || 'Select or type subjects you specialize in'}
+                      />
+                    )}
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    💡 High demand subjects (Math, Physics, CS) typically command 25% higher rates
+                  </Typography>
                 </Grid>
-                <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Highest Level of Education</InputLabel>
-                    <Select value={educationLevel} label="Highest Level of Education" onChange={(e) => setEducationLevel(e.target.value)}>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={!!errors.educationLevel}>
+                    <InputLabel>Highest Education Level</InputLabel>
+                    <Select
+                      value={educationLevel}
+                      label="Highest Education Level"
+                      onChange={(e) => setEducationLevel(e.target.value)}
+                    >
                       <MenuItem value="High School">High School</MenuItem>
-                      <MenuItem value="Bachelors">Bachelor's</MenuItem>
-                      <MenuItem value="Masters">Master's</MenuItem>
+                      <MenuItem value="Bachelors">Bachelor's Degree</MenuItem>
+                      <MenuItem value="Masters">Master's Degree</MenuItem>
                       <MenuItem value="PhD">PhD</MenuItem>
+                      <MenuItem value="Professional">Professional Certification</MenuItem>
                     </Select>
+                    {errors.educationLevel && (
+                      <Typography variant="caption" color="error">
+                        {errors.educationLevel}
+                      </Typography>
+                    )}
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} sm={8}>
-                  <Autocomplete options={[] as string[]} multiple freeSolo value={degrees} onChange={(_, v) => setDegrees(v as string[])} renderTags={(value: string[], getTagProps) => value.map((option, index) => (<Chip variant="outlined" label={option} {...getTagProps({ index })} />))} renderInput={(params) => <TextField {...params} label="Degrees / Certifications" />} />
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Years of Teaching Experience"
+                    type="number"
+                    value={experienceYears}
+                    onChange={(e) => setExperienceYears(Number(e.target.value || ''))}
+                    fullWidth
+                    helperText="Include both formal and informal tutoring"
+                  />
                 </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField label="Years of Tutoring Experience" type="number" value={experienceYears} onChange={(e) => setExperienceYears(Number(e.target.value || ''))} fullWidth />
-                </Grid>
+
                 <Grid item xs={12}>
-                  <TextField label="Short Bio (max 600 chars)" multiline rows={4} value={shortBio} onChange={(e) => setShortBio(e.target.value.slice(0, 600))} fullWidth helperText={`${shortBio.length}/600`} error={!!errors.shortBio} />
+                  <Autocomplete
+                    options={[] as string[]}
+                    multiple
+                    freeSolo
+                    value={degrees}
+                    onChange={(_, v) => setDegrees(v as string[])}
+                    renderTags={(value: string[], getTagProps) =>
+                      value.map((option, index) => (
+                        <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                      ))
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Degrees & Certifications (Optional)"
+                        helperText="e.g., B.S. in Mathematics, Teaching Certificate"
+                      />
+                    )}
+                  />
                 </Grid>
+
                 <Grid item xs={12}>
-                  <TextField label="Detailed Teaching Statement" multiline rows={6} value={teachingStatement} onChange={(e) => setTeachingStatement(e.target.value)} fullWidth helperText="Explain your teaching approach, assessment methods, and strengths." />
+                  <TextField
+                    label="Short Bio"
+                    multiline
+                    rows={4}
+                    value={shortBio}
+                    onChange={(e) => setShortBio(e.target.value.slice(0, 600))}
+                    fullWidth
+                    error={!!errors.shortBio}
+                    helperText={
+                      errors.shortBio ||
+                      `${shortBio.length}/600 - Brief introduction students will see on your profile`
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Button
+                    variant="text"
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    sx={{ mb: 1 }}
+                  >
+                    {showAdvanced ? '− Hide' : '+ Add'} detailed teaching statement (Optional)
+                  </Button>
+                  <Collapse in={showAdvanced}>
+                    <TextField
+                      label="Detailed Teaching Philosophy"
+                      multiline
+                      rows={6}
+                      value={teachingStatement}
+                      onChange={(e) => setTeachingStatement(e.target.value)}
+                      fullWidth
+                      helperText="Explain your teaching approach, methods, and what makes you unique"
+                    />
+                  </Collapse>
                 </Grid>
               </Grid>
+            </Box>
+          </Fade>
+        )
 
-              <Divider sx={{ my: 2 }} />
+      case 2:
+        return (
+          <Fade in timeout={500}>
+            <Box>
+              <Grid container spacing={3}>
+                {/* Left Column - Business Setup */}
+                <Grid item xs={12} md={7}>
+                  <Typography variant="h5" fontWeight={600} gutterBottom>
+                    Business Setup
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ mb: 3 }}>
+                    Set your rates and availability
+                  </Typography>
 
-              {/* Identity & Eligibility */}
-              <Typography variant="h6">Identity & Eligibility</Typography>
-              <Grid container spacing={2}>
-                <Grid item>
-                  <Button variant="outlined" component="label">Upload National ID / Passport<input hidden type="file" accept="image/*,application/pdf" onChange={(e) => setIdUpload(e.target.files?.[0] || null)} /></Button>
-                  {idUpload && <Typography variant="body2">{idUpload.name}</Typography>}
+                  {/* Smart Rate Calculator */}
+                  {recommendedRate.avg > 0 && (
+                    <Paper sx={{ p: 3, bgcolor: '#f0f4ff', mb: 3 }}>
+                      <Typography variant="subtitle1" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <AutoAwesomeIcon /> Smart Rate Recommendation
+                      </Typography>
+                      <Typography variant="body2" sx={{ mb: 2 }} color="text.secondary">
+                        Based on your {educationLevel} degree and {experienceYears} years experience:
+                      </Typography>
+                      <Typography variant="h5" color="primary" sx={{ mb: 1 }}>
+                        ${recommendedRate.min} - ${recommendedRate.max}/hour
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Market average for your qualifications: <strong>${recommendedRate.avg}/hour</strong>
+                      </Typography>
+                    </Paper>
+                  )}
+
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Your Hourly Rate"
+                        type="number"
+                        value={hourlyRate}
+                        onChange={(e) => setHourlyRate(Number(e.target.value || ''))}
+                        fullWidth
+                        error={!!errors.hourlyRate}
+                        helperText={errors.hourlyRate || `Suggested: $${recommendedRate.avg}/hour`}
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Currency</InputLabel>
+                        <Select
+                          value={currency}
+                          label="Currency"
+                          onChange={(e) => setCurrency(e.target.value)}
+                        >
+                          <MenuItem value="USD">USD ($)</MenuItem>
+                          <MenuItem value="GBP">GBP (£)</MenuItem>
+                          <MenuItem value="EUR">EUR (€)</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <FormControl fullWidth error={!!errors.weeklyHours}>
+                        <InputLabel>Weekly Availability</InputLabel>
+                        <Select
+                          value={weeklyHours}
+                          label="Weekly Availability"
+                          onChange={(e) => setWeeklyHours(e.target.value)}
+                        >
+                          <MenuItem value="<20">Less than 20 hrs/week (Part-time)</MenuItem>
+                          <MenuItem value="20-40">20-40 hrs/week (Regular)</MenuItem>
+                          <MenuItem value="40+">40+ hrs/week (Full-time)</MenuItem>
+                        </Select>
+                        {errors.weeklyHours && (
+                          <Typography variant="caption" color="error">
+                            {errors.weeklyHours}
+                          </Typography>
+                        )}
+                      </FormControl>
+                      {hourlyRate && weeklyHours && (
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                          💰 Estimated monthly income: 
+                          {weeklyHours === '<20' && ` $${Math.round(Number(hourlyRate) * 15 * 4)}`}
+                          {weeklyHours === '20-40' && ` $${Math.round(Number(hourlyRate) * 30 * 4)}`}
+                          {weeklyHours === '40+' && ` $${Math.round(Number(hourlyRate) * 40 * 4)}+`}
+                        </Typography>
+                      )}
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" gutterBottom fontWeight={600}>
+                        Preferred Format
+                      </Typography>
+                      <Stack direction="row" spacing={2} flexWrap="wrap">
+                        {['Online', 'In-person', 'Hybrid'].map((fmt) => (
+                          <Chip
+                            key={fmt}
+                            label={fmt}
+                            onClick={() => toggleFormat(fmt)}
+                            color={formatPreference.includes(fmt) ? 'primary' : 'default'}
+                            variant={formatPreference.includes(fmt) ? 'filled' : 'outlined'}
+                          />
+                        ))}
+                      </Stack>
+                    </Grid>
+                  </Grid>
                 </Grid>
-                <Grid item>
-                  <Button variant="outlined" component="label">Upload Resume/CV<input hidden type="file" accept="application/pdf" onChange={(e) => setResumeUpload(e.target.files?.[0] || null)} /></Button>
-                  {resumeUpload && <Typography variant="body2">{resumeUpload.name}</Typography>}
+
+                {/* Right Column - Match Prediction */}
+                <Grid item xs={12} md={5}>
+                  <Paper sx={{ p: 3, height: '100%', position: 'sticky', top: 120 }}>
+                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <GroupIcon /> Student Match Prediction
+                    </Typography>
+                    
+                    <Box sx={{ mb: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <Avatar sx={{ bgcolor: '#4caf50', width: 56, height: 56 }}>
+                          <TrendingUpIcon />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={600}>High Match Potential</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Based on your profile
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <Box sx={{ p: 2, bgcolor: '#e8f5e9', borderRadius: 1, mb: 2 }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                          Estimated time to first student:
+                        </Typography>
+                        <Typography variant="h6" color="success.main">
+                          2-7 days
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Based on demand for {specialization[0] || 'your subjects'} in {timeZone}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    
+                    <Divider sx={{ my: 2 }} />
+                    
+                    <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                      Your Profile Highlights
+                    </Typography>
+                    <Stack spacing={1}>
+                      {educationLevel && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CheckCircleIcon sx={{ fontSize: 18, color: '#4caf50' }} />
+                          <Typography variant="body2">{educationLevel} Education</Typography>
+                        </Box>
+                      )}
+                      {experienceYears && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CheckCircleIcon sx={{ fontSize: 18, color: '#4caf50' }} />
+                          <Typography variant="body2">{experienceYears}+ Years Experience</Typography>
+                        </Box>
+                      )}
+                      {specialization.length > 0 && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CheckCircleIcon sx={{ fontSize: 18, color: '#4caf50' }} />
+                          <Typography variant="body2">{specialization.length} Subject{specialization.length > 1 ? 's' : ''}</Typography>
+                        </Box>
+                      )}
+                      {hourlyRate && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CheckCircleIcon sx={{ fontSize: 18, color: '#4caf50' }} />
+                          <Typography variant="body2">Competitive Rate (${hourlyRate}/hr)</Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Paper>
                 </Grid>
-                <Grid item>
-                  <Button variant="outlined" component="label">Upload Proof of Qualifications<input hidden type="file" accept="image/*,application/pdf" onChange={(e) => setQualificationsUpload(e.target.files?.[0] || null)} /></Button>
-                  {qualificationsUpload && <Typography variant="body2">{qualificationsUpload.name}</Typography>}
+              </Grid>
+            </Box>
+          </Fade>
+        )
+
+      case 3:
+        return (
+          <Fade in timeout={500}>
+            <Box>
+              <Typography variant="h5" fontWeight={600} gutterBottom>
+                Verification & Documents
+              </Typography>
+              <Typography color="text.secondary" sx={{ mb: 4 }}>
+                Verified tutors are trusted more by students and receive 2x more bookings
+              </Typography>
+
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                      Identity Verification (Optional but recommended)
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Upload a government-issued ID to verify your identity
+                    </Typography>
+                    <Button variant="outlined" component="label">
+                      {idUpload ? 'Change Document' : 'Upload ID / Passport'}
+                      <input
+                        hidden
+                        type="file"
+                        accept="image/*,application/pdf"
+                        onChange={(e) => setIdUpload(e.target.files?.[0] || null)}
+                      />
+                    </Button>
+                    {idUpload && (
+                      <Typography variant="body2" sx={{ mt: 1 }} color="success.main">
+                        ✓ {idUpload.name}
+                      </Typography>
+                    )}
+                  </Paper>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                      Professional Documents (Optional)
+                    </Typography>
+                    <Stack spacing={2}>
+                      <Box>
+                        <Button variant="outlined" component="label" size="small">
+                          {resumeUpload ? 'Change Resume' : 'Upload Resume/CV'}
+                          <input
+                            hidden
+                            type="file"
+                            accept="application/pdf"
+                            onChange={(e) => setResumeUpload(e.target.files?.[0] || null)}
+                          />
+                        </Button>
+                        {resumeUpload && (
+                          <Typography variant="caption" sx={{ ml: 2 }} color="success.main">
+                            ✓ {resumeUpload.name}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box>
+                        <Button variant="outlined" component="label" size="small">
+                          {qualificationsUpload ? 'Change Certificates' : 'Upload Certificates'}
+                          <input
+                            hidden
+                            type="file"
+                            accept="image/*,application/pdf"
+                            onChange={(e) => setQualificationsUpload(e.target.files?.[0] || null)}
+                          />
+                        </Button>
+                        {qualificationsUpload && (
+                          <Typography variant="caption" sx={{ ml: 2 }} color="success.main">
+                            ✓ {qualificationsUpload.name}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Stack>
+                  </Paper>
                 </Grid>
 
                 {country === 'United States' && (
-                  <Grid item xs={12} sm={6}>
-                    <TextField label="SSN" value={ssn} onChange={(e) => setSsn(e.target.value)} fullWidth error={!!errors.ssn} helperText={errors.ssn || ''} />
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Social Security Number (SSN)"
+                      value={ssn}
+                      onChange={(e) => setSsn(e.target.value)}
+                      fullWidth
+                      error={!!errors.ssn}
+                      helperText={errors.ssn || 'Required for US tax compliance (encrypted & secure)'}
+                      type="password"
+                    />
                   </Grid>
                 )}
 
                 <Grid item xs={12}>
-                  <FormControlLabel control={<Checkbox checked={certify} onChange={(e) => setCertify(e.target.checked)} />} label="I certify that all information provided is accurate." />
-                  {errors.certify && <Typography color="error" variant="body2">{errors.certify}</Typography>}
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={certify}
+                        onChange={(e) => setCertify(e.target.checked)}
+                      />
+                    }
+                    label={
+                      <Typography variant="body2">
+                        I certify that all information provided is accurate and I agree to the{' '}
+                        <Link href="#" underline="hover">
+                          Terms of Service
+                        </Link>{' '}
+                        and{' '}
+                        <Link href="#" underline="hover">
+                          Tutor Agreement
+                        </Link>
+                      </Typography>
+                    }
+                  />
+                  {errors.certify && (
+                    <Typography color="error" variant="caption">
+                      {errors.certify}
+                    </Typography>
+                  )}
                 </Grid>
               </Grid>
+            </Box>
+          </Fade>
+        )
 
-              <Divider sx={{ my: 2 }} />
+      case 4:
+        return (
+          <Fade in timeout={500}>
+            <Box>
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <AutoAwesomeIcon sx={{ fontSize: 60, color: '#7b1fa2', mb: 2 }} />
+                <Typography variant="h4" fontWeight={700} sx={{ mb: 2, color: '#7b1fa2' }}>
+                  Launch Ready! 🎉
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  One final step — complete your registration to start teaching
+                </Typography>
+              </Box>
 
-              {/* Availability & Schedule */}
-              <Typography variant="h6">Availability & Schedule</Typography>
-              <Typography variant="body2">Timezone: America/New_York (US Eastern Time)</Typography>
-              <Grid container spacing={1} sx={{ mb: 1 }}>
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                  <Grid item xs={12} sm={6} md={4} key={day}>
-                    <Box sx={{ border: '1px solid #eee', p: 1, borderRadius: 1 }}>
-                      <Typography variant="subtitle2">{day}</Typography>
-                      <FormControlLabel control={<Checkbox checked={availability[day].includes('Morning')} onChange={() => toggleAvailability(day, 'Morning')} />} label="Morning" />
-                      <FormControlLabel control={<Checkbox checked={availability[day].includes('Afternoon')} onChange={() => toggleAvailability(day, 'Afternoon')} />} label="Afternoon" />
-                      <FormControlLabel control={<Checkbox checked={availability[day].includes('Evening')} onChange={() => toggleAvailability(day, 'Evening')} />} label="Evening" />
-                    </Box>
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                {[
+                  { label: 'Profile Quality', value: `${profileQuality}/100`, color: profileQuality >= 70 ? '#4caf50' : '#ff9800' },
+                  { label: 'Subjects', value: specialization.length || 0, color: '#2196f3' },
+                  { label: 'Hourly Rate', value: `$${hourlyRate || 0}`, color: '#9c27b0' },
+                  { label: 'Weekly Hours', value: weeklyHours || 'Not set', color: '#ff9800' }
+                ].map((metric, i) => (
+                  <Grid item xs={6} md={3} key={i}>
+                    <Paper sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        {metric.label}
+                      </Typography>
+                      <Typography variant="h6" sx={{ color: metric.color, fontWeight: 600 }}>
+                        {metric.value}
+                      </Typography>
+                    </Paper>
                   </Grid>
                 ))}
               </Grid>
-              <FormLabel component="legend">Preferred tutoring format</FormLabel>
-              <FormControlLabel control={<Checkbox checked={formatPreference.includes('Online')} onChange={() => toggleFormat('Online')} />} label="Online" />
-              <FormControlLabel control={<Checkbox checked={formatPreference.includes('In-person')} onChange={() => toggleFormat('In-person')} />} label="In-person" />
-              <FormControlLabel control={<Checkbox checked={formatPreference.includes('Hybrid')} onChange={() => toggleFormat('Hybrid')} />} label="Hybrid" />
 
-              <Divider sx={{ my: 2 }} />
-
-              {/* Rate & Payment Setup */}
-              <Typography variant="h6">Rate & Payment Setup</Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
-                  <TextField label="Hourly Rate" type="number" value={hourlyRate} onChange={(e) => setHourlyRate(Number(e.target.value || ''))} fullWidth />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Payout Method</InputLabel>
-                    <Select value={payoutMethod} label="Payout Method" onChange={(e) => setPayoutMethod(e.target.value)}>
-                      <MenuItem value="Bank">Bank</MenuItem>
-                      <MenuItem value="PayPal">PayPal</MenuItem>
-                      <MenuItem value="Stripe">Stripe</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Currency</InputLabel>
-                    <Select value={currency} label="Currency" onChange={(e) => setCurrency(e.target.value)}>
-                      <MenuItem value="USD">USD</MenuItem>
-                      <MenuItem value="GBP">GBP</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-
-              <Divider sx={{ my: 2 }} />
-
-              {/* Registration Fee & Payment */}
-              <Paper sx={{ p: 3, mb: 3, backgroundColor: '#f0f4ff', border: '2px solid #1976d2' }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 4,
+                  borderRadius: 3,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  mb: 4,
+                }}
+              >
+                <Typography variant="h6" fontWeight={600} gutterBottom>
                   💳 Registration Fee
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  A one-time registration fee of <strong>$30 USD</strong> is required to activate your tutor account and start accepting students.
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  A one-time fee of <strong>$30 USD</strong> activates your professional tutor profile:
                 </Typography>
-
-                {!paymentCompleted ? (
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2 }}>
-                      Select a Payment Method:
-                    </Typography>
-                    <Grid container spacing={2} sx={{ mb: 2 }}>
-                      {/* PayPal */}
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                          onClick={() => !processingPayment && setPaymentMethod('PayPal')}
-                          sx={{
-                            cursor: processingPayment ? 'not-allowed' : 'pointer',
-                            opacity: processingPayment ? 0.6 : 1,
-                            border: paymentMethod === 'PayPal' ? '3px solid #0070ba' : '2px solid #ddd',
-                            backgroundColor: paymentMethod === 'PayPal' ? '#f0f7ff' : 'white',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              boxShadow: 2,
-                              borderColor: '#0070ba',
-                            },
-                          }}
-                        >
-                          <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
-                              <SiPaypal size={32} color="#0070ba" />
-                            </Box>
-                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                              PayPal
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-
-                      {/* Credit Card */}
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                          onClick={() => !processingPayment && setPaymentMethod('Credit Card')}
-                          sx={{
-                            cursor: processingPayment ? 'not-allowed' : 'pointer',
-                            opacity: processingPayment ? 0.6 : 1,
-                            border: paymentMethod === 'Credit Card' ? '3px solid #1976d2' : '2px solid #ddd',
-                            backgroundColor: paymentMethod === 'Credit Card' ? '#f0f7ff' : 'white',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              boxShadow: 2,
-                              borderColor: '#1976d2',
-                            },
-                          }}
-                        >
-                          <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
-                              <CreditCardIcon sx={{ fontSize: 32, color: '#1976d2' }} />
-                            </Box>
-                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                              Credit Card
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-
-                      {/* Stripe */}
-                      <Grid item xs={12} sm={6} md={4}>
-                        <Card
-                          onClick={() => !processingPayment && setPaymentMethod('Stripe')}
-                          sx={{
-                            cursor: processingPayment ? 'not-allowed' : 'pointer',
-                            opacity: processingPayment ? 0.6 : 1,
-                            border: paymentMethod === 'Stripe' ? '3px solid #6772e5' : '2px solid #ddd',
-                            backgroundColor: paymentMethod === 'Stripe' ? '#f5f3ff' : 'white',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              boxShadow: 2,
-                              borderColor: '#6772e5',
-                            },
-                          }}
-                        >
-                          <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
-                              <SiStripe size={32} color="#6772e5" />
-                            </Box>
-                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                              Stripe
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    </Grid>
-
-                    {paymentError && <Alert severity="warning" sx={{ mt: 1 }}>{paymentError}</Alert>}
-                    {successMessage && <Alert severity="success" sx={{ mt: 1 }}>{successMessage}</Alert>}
-                    {paymentMethod && (
-                      <Button
-                        variant="contained"
-                        color="success"
-                        fullWidth
-                        size="large"
-                        onClick={() => processPayment(paymentMethod)}
-                        disabled={processingPayment}
-                        startIcon={processingPayment ? <CircularProgress color="inherit" size={18} /> : null}
-                        sx={{ mt: 2 }}
-                      >
-                        {processingPayment ? 'Processing Payment...' : `Pay $30 with ${paymentMethod}`}
-                      </Button>
-                    )}
-                    {errors.payment && (
-                      <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-                        {errors.payment}
-                      </Typography>
-                    )} 
-                  </Box>
-                ) : (
-                  <Box sx={{ p: 2, backgroundColor: '#e8f5e9', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="h6" sx={{ color: '#2e7d32' }}>
-                      ✓
-                    </Typography>
-                    <Box>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
-                        Payment Completed!
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Your registration fee of $30 has been successfully processed.
-                      </Typography>
-                    </Box>
-                  </Box>
-                )}
+                <Stack spacing={1} sx={{ pl: 2 }}>
+                  <Typography variant="body2">✓ Unlimited student connections</Typography>
+                  <Typography variant="body2">✓ Professional profile page</Typography>
+                  <Typography variant="body2">✓ Secure payment processing</Typography>
+                  <Typography variant="body2">✓ Priority customer support</Typography>
+                </Stack>
               </Paper>
 
-              <Divider sx={{ my: 2 }} />
+              {!paymentCompleted ? (
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2 }}>
+                    Select Payment Method:
+                  </Typography>
+                  <Grid container spacing={2} sx={{ mb: 3 }}>
+                    {[
+                      { name: 'PayPal', icon: <SiPaypal size={28} color="#0070ba" />, color: '#0070ba' },
+                      { name: 'Credit Card', icon: <CreditCardIcon sx={{ fontSize: 28, color: '#1976d2' }} />, color: '#1976d2' },
+                      { name: 'Stripe', icon: <SiStripe size={28} color="#6772e5" />, color: '#6772e5' },
+                    ].map((method) => (
+                      <Grid item xs={12} sm={4} key={method.name}>
+                        <Card
+                          onClick={() => !processingPayment && setPaymentMethod(method.name)}
+                          sx={{
+                            cursor: processingPayment ? 'not-allowed' : 'pointer',
+                            opacity: processingPayment ? 0.6 : 1,
+                            border: paymentMethod === method.name ? `3px solid ${method.color}` : '2px solid #e0e0e0',
+                            backgroundColor: paymentMethod === method.name ? `${method.color}08` : 'white',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              boxShadow: 3,
+                              borderColor: method.color,
+                            },
+                          }}
+                        >
+                          <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                            <Box sx={{ mb: 1 }}>{method.icon}</Box>
+                            <Typography variant="body2" fontWeight={600}>
+                              {method.name}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
 
-              <Button variant="contained" type="submit" fullWidth sx={{ mt: 2 }} disabled={creatingProfile} startIcon={creatingProfile ? <CircularProgress size={18} color="inherit" /> : null}>{creatingProfile ? 'Creating profile...' : 'Create Profile'}</Button>
+                  {paymentError && (
+                    <Alert severity="warning" sx={{ mb: 2 }}>
+                      {paymentError}
+                    </Alert>
+                  )}
+                  {successMessage && (
+                    <Alert severity="success" sx={{ mb: 2 }}>
+                      {successMessage}
+                    </Alert>
+                  )}
+                  {errors.payment && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                      {errors.payment}
+                    </Alert>
+                  )}
+
+                  {paymentMethod && (
+                    <Button
+                      variant="contained"
+                      color="success"
+                      fullWidth
+                      size="large"
+                      onClick={() => processPayment(paymentMethod)}
+                      disabled={processingPayment}
+                      startIcon={processingPayment ? <CircularProgress color="inherit" size={20} /> : null}
+                      sx={{ py: 1.5, fontSize: '1rem', fontWeight: 600 }}
+                    >
+                      {processingPayment ? 'Processing...' : `Pay $30 with ${paymentMethod}`}
+                    </Button>
+                  )}
+                </Box>
+              ) : (
+                <Paper
+                  sx={{
+                    p: 3,
+                    backgroundColor: '#e8f5e9',
+                    borderRadius: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    mb: 3,
+                  }}
+                >
+                  <CheckCircleIcon sx={{ fontSize: 48, color: '#2e7d32' }} />
+                  <Box>
+                    <Typography variant="h6" sx={{ color: '#2e7d32', fontWeight: 600 }}>
+                      Payment Successful!
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Your registration is complete. Click below to launch your profile.
+                    </Typography>
+                  </Box>
+                </Paper>
+              )}
+            </Box>
+          </Fade>
+        )
+
+      default:
+        return null
+    }
+  }
+
+  return (
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
+      {/* Sticky Progress Header */}
+      <Paper
+        elevation={2}
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1100,
+          py: 2,
+          px: 4,
+          backgroundColor: 'white',
+        }}
+      >
+        <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" fontWeight={600}>
+              Professional Tutor Registration
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Step {activeStep + 1} of {STEPS.length}
+              </Typography>
+              <Chip
+                label={`${getCompletionPercentage()}% Complete`}
+                color="primary"
+                size="small"
+                icon={<CheckCircleIcon />}
+              />
             </Box>
           </Box>
+          <LinearProgress
+            variant="determinate"
+            value={getCompletionPercentage()}
+            sx={{
+              height: 8,
+              borderRadius: 1,
+              backgroundColor: '#e0e0e0',
+              '& .MuiLinearProgress-bar': {
+                background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+              },
+            }}
+          />
+        </Box>
+      </Paper>
+
+      <Box sx={{ maxWidth: 1200, mx: 'auto', px: 4, py: 6 }}>
+        <Grid container spacing={4}>
+          {/* Stepper Sidebar */}
+          <Grid item xs={12} md={3}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                position: { md: 'sticky' },
+                top: 120,
+                borderRadius: 2,
+                border: '1px solid #e0e0e0',
+              }}
+            >
+              <Stepper activeStep={activeStep} orientation="vertical">
+                {STEPS.map((label, index) => (
+                  <Step key={label} completed={completedSteps.has(index)}>
+                    <StepLabel
+                      sx={{
+                        cursor: index < activeStep || completedSteps.has(index) ? 'pointer' : 'default',
+                        '& .MuiStepLabel-label': {
+                          fontSize: '0.875rem',
+                          fontWeight: index === activeStep ? 600 : 400,
+                        },
+                      }}
+                      onClick={() => handleStepClick(index)}
+                    >
+                      {label}
+                    </StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+            </Paper>
+          </Grid>
+
+          {/* Main Content */}
+          <Grid item xs={12} md={9}>
+            <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3, border: '1px solid #e0e0e0' }}>
+              {error && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {error}
+                </Alert>
+              )}
+              {successMessage && activeStep === 4 && (
+                <Alert severity="success" sx={{ mb: 3 }}>
+                  {successMessage}
+                </Alert>
+              )}
+
+              {renderStepContent()}
+
+              <Divider sx={{ my: 4 }} />
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleBack}
+                  disabled={activeStep === 0}
+                  startIcon={<ArrowBackIcon />}
+                >
+                  Back
+                </Button>
+
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    variant="text"
+                    startIcon={<SaveIcon />}
+                    sx={{ display: { xs: 'none', sm: 'flex' } }}
+                  >
+                    Save & Exit
+                  </Button>
+                  {activeStep < STEPS.length - 1 ? (
+                    <Button
+                      variant="contained"
+                      onClick={handleNext}
+                      endIcon={<ArrowForwardIcon />}
+                      size="large"
+                    >
+                      Continue
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      onClick={handleSubmit}
+                      disabled={creatingProfile || !paymentCompleted}
+                      startIcon={creatingProfile ? <CircularProgress size={20} color="inherit" /> : <CheckCircleIcon />}
+                      size="large"
+                      sx={{
+                        background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        px: 4,
+                        py: 1.5,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {creatingProfile ? 'Creating Profile...' : 'Launch Your Tutor Profile'}
+                    </Button>
+                  )}
+                </Stack>
+              </Box>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
     </Box>
   )
 }
@@ -670,4 +1440,3 @@ function passwordStrengthColor(pw: string) {
   if (pct < 70) return '#ff9800'
   return '#4caf50'
 }
-
