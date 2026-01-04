@@ -570,10 +570,10 @@ export default function BecomeTutor() {
                           </MenuItem>
                           <MenuItem
                             onClick={() => {
-                              const input = document.createElement('input')
+                              const input = document.createElement('input') as HTMLInputElement & { capture: string }
                               input.type = 'file'
                               input.accept = 'image/*'
-                              input.setAttribute('capture', 'user')
+                              input.capture = 'user'
                               input.onchange = (e) => {
                                 const file = (e.target as HTMLInputElement).files?.[0]
                                 if (file) handlePhotoUpload(file)
