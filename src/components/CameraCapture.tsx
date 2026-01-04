@@ -40,14 +40,17 @@ export default function CameraCapture({ open, onCapture, onClose }: CameraCaptur
         audio: false,
       })
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream
-        setStream(mediaStream)
-      }
+      setStream(mediaStream)
+      
+      // Set srcObject on next tick to ensure ref is ready
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream
+        }
+      }, 0)
     } catch (err) {
       console.error('Error accessing camera:', err)
       setError('Unable to access camera. Please check permissions.')
-    } finally {
       setLoading(false)
     }
   }
@@ -59,28 +62,41 @@ export default function CameraCapture({ open, onCapture, onClose }: CameraCaptur
     }
   }
 
-  const handleCapture = () => {
-    if (videoRef.current && canvasRef.current) {
+  const handleCapture = async () => {
+    if (!videoRef.current || !canvasRef.current) return
+    
+    try {
       const context = canvasRef.current.getContext('2d')
-      if (context) {
-        // Set canvas dimensions to match video
-        canvasRef.current.width = videoRef.current.videoWidth
-        canvasRef.current.height = videoRef.current.videoHeight
+      if (!context) return
 
-        // Draw video frame to canvas
-        context.drawImage(videoRef.current, 0, 0)
-
-        // Convert canvas to blob and create File
-        canvasRef.current.toBlob((blob) => {
-          if (blob) {
-            const file = new File([blob], `selfie-${Date.now()}.jpg`, {
-              type: 'image/jpeg',
-            })
-            onCapture(file)
-            handleClose()
-          }
-        }, 'image/jpeg', 0.95)
+      // Set canvas dimensions to match video
+      const videoWidth = videoRef.current.videoWidth
+      const videoHeight = videoRef.current.videoHeight
+      
+      if (videoWidth === 0 || videoHeight === 0) {
+        setError('Camera feed not ready. Please wait a moment.')
+        return
       }
+
+      canvasRef.current.width = videoWidth
+      canvasRef.current.height = videoHeight
+
+      // Draw video frame to canvas
+      context.drawImage(videoRef.current, 0, 0)
+
+      // Convert canvas to blob and create File
+      canvasRef.current.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], `selfie-${Date.now()}.jpg`, {
+            type: 'image/jpeg',
+          })
+          onCapture(file)
+          handleClose()
+        }
+      }, 'image/jpeg', 0.95)
+    } catch (err) {
+      console.error('Capture error:', err)
+      setError('Failed to capture photo. Please try again.')
     }
   }
 
@@ -92,11 +108,17 @@ export default function CameraCapture({ open, onCapture, onClose }: CameraCaptur
   React.useEffect(() => {
     if (open) {
       startCamera()
-    }
-    return () => {
-      stopCamera()
+      return () => {
+        stopCamera()
+      }
     }
   }, [open])
+
+  React.useEffect(() => {
+    if (stream && videoRef.current) {
+      setLoading(false)
+    }
+  }, [stream])
 
   return (
     <Dialog
@@ -132,29 +154,21 @@ export default function CameraCapture({ open, onCapture, onClose }: CameraCaptur
       <DialogContent sx={{ py: 2 }}>
         {error ? (
           <Alert severity="error">{error}</Alert>
-        ) : loading ? (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: 300,
-            }}
-          >
-            <CircularProgress />
-          </Box>
         ) : (
           <Box sx={{ position: 'relative', width: '100%' }}>
             <video
               ref={videoRef}
               autoPlay
               playsInline
+              muted
               style={{
                 width: '100%',
                 height: 'auto',
+                minHeight: 300,
                 borderRadius: 8,
                 backgroundColor: '#000',
                 display: 'block',
+                objectFit: 'cover',
               }}
             />
             <canvas
@@ -169,7 +183,6 @@ export default function CameraCapture({ open, onCapture, onClose }: CameraCaptur
         <Button
           onClick={handleClose}
           variant="outlined"
-          disabled={loading}
         >
           Cancel
         </Button>
@@ -177,7 +190,7 @@ export default function CameraCapture({ open, onCapture, onClose }: CameraCaptur
           onClick={handleCapture}
           variant="contained"
           startIcon={<CameraAltIcon />}
-          disabled={!stream || loading}
+          disabled={!stream}
         >
           Capture
         </Button>
