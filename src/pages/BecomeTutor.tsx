@@ -32,6 +32,9 @@ import {
   Link,
   Tooltip,
   Badge,
+  Menu,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
@@ -44,6 +47,11 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import StarIcon from '@mui/icons-material/Star'
 import GroupIcon from '@mui/icons-material/Group'
 import SchoolIcon from '@mui/icons-material/School'
+import CameraAltIcon from '@mui/icons-material/CameraAlt'
+import EditIcon from '@mui/icons-material/Edit'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import DeleteIcon from '@mui/icons-material/Delete'
+import CheckIcon from '@mui/icons-material/Check'
 import { SiPaypal, SiStripe } from 'react-icons/si'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
 import { useAuth } from '../context/AuthContext'
@@ -124,11 +132,15 @@ export default function BecomeTutor() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [profileQuality, setProfileQuality] = useState(0)
+  const [availableCities, setAvailableCities] = useState<string[]>([])
+  const [photoMenuAnchor, setPhotoMenuAnchor] = useState<{ left: number; top: number } | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoMetadata, setPhotoMetadata] = useState<{ name: string; size: number } | null>(null)
 
   const navigate = useNavigate()
   const { user, register, login } = useAuth()
   const { countries, loading: countriesLoading } = useCountries()
-  const countryOptions = countries.map(c => c.name.common)
+  const countryOptions = countries.map(c => c.country)
 
   useEffect(() => {
     if (user) {
@@ -148,6 +160,20 @@ export default function BecomeTutor() {
       setTimeZone('America/New_York')
     }
   }, [])
+
+  // Update available cities when country changes
+  useEffect(() => {
+    if (country) {
+      const selectedCountry = countries.find(c => c.country === country)
+      if (selectedCountry) {
+        setAvailableCities(selectedCountry.cities)
+        setCity('') // Reset city selection when country changes
+      }
+    } else {
+      setAvailableCities([])
+      setCity('')
+    }
+  }, [country, countries])
 
   // Calculate profile quality score
   useEffect(() => {
@@ -251,6 +277,51 @@ export default function BecomeTutor() {
       setActiveStep(step)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
+  }
+
+  // Photo upload handler
+  const handlePhotoUpload = async (file: File | Blob) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload a valid image file')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB')
+      return
+    }
+
+    // Convert Blob to File if necessary (for camera captures)
+    let photoFile: File
+    if (file instanceof File) {
+      photoFile = file
+    } else {
+      // Generate a timestamp-based filename for camera captures
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+      photoFile = new File([file], `profile_${timestamp}.jpg`, { type: 'image/jpeg' })
+    }
+
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(photoFile)
+    setPhotoPreview(previewUrl)
+
+    // Store metadata
+    setPhotoMetadata({
+      name: photoFile.name,
+      size: photoFile.size,
+    })
+
+    // Set the photo
+    setProfilePhoto(photoFile)
+    setError('')
+  }
+
+  const handleRemovePhoto = () => {
+    setProfilePhoto(null)
+    setPhotoPreview(null)
+    setPhotoMetadata(null)
   }
 
   const toggleFormat = (fmt: string) => {
@@ -372,40 +443,263 @@ export default function BecomeTutor() {
 
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <Badge
-                          overlap="circular"
-                          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                          badgeContent={
-                            profilePhoto ? (
-                              <Tooltip title="Great photo!">
-                                <CheckCircleIcon sx={{ fontSize: 24, color: '#4caf50' }} />
-                              </Tooltip>
-                            ) : (
-                              <Tooltip title="Add photo to boost profile">
-                                <AutoAwesomeIcon sx={{ fontSize: 24, color: '#ff9800' }} />
-                              </Tooltip>
-                            )
-                          }
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          alignItems: 'flex-start',
+                          gap: 3,
+                        }}
+                      >
+                        {/* Photo Upload Area */}
+                        <Box sx={{ flexShrink: 0 }} className="profile-photo-area">
+                          <Tooltip title={profilePhoto ? "Edit photo" : "Add profile photo"}>
+                            <Box
+                              sx={{
+                                position: 'relative',
+                                cursor: 'pointer',
+                                '&:hover .profile-photo-overlay': {
+                                  opacity: 1,
+                                },
+                              }}
+                              onClick={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                setPhotoMenuAnchor({ left: rect.left, top: rect.bottom })
+                              }}
+                            >
+                              <Badge
+                                overlap="circular"
+                                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                badgeContent={
+                                  profilePhoto ? (
+                                    <EditIcon
+                                      sx={{
+                                        fontSize: 16,
+                                        color: 'white',
+                                        bgcolor: 'primary.main',
+                                        borderRadius: '50%',
+                                        p: 0.5,
+                                        border: '2px solid white',
+                                      }}
+                                    />
+                                  ) : (
+                                    <CameraAltIcon
+                                      sx={{
+                                        fontSize: 16,
+                                        color: 'white',
+                                        bgcolor: 'primary.main',
+                                        borderRadius: '50%',
+                                        p: 0.5,
+                                        border: '2px solid white',
+                                      }}
+                                    />
+                                  )
+                                }
+                              >
+                                <Avatar
+                                  sx={{
+                                    width: 120,
+                                    height: 120,
+                                    bgcolor: profilePhoto ? 'transparent' : '#f0f0f0',
+                                    border: '2px dashed',
+                                    borderColor: profilePhoto ? 'transparent' : '#bdbdbd',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                      borderColor: 'primary.main',
+                                    },
+                                  }}
+                                  src={photoPreview || undefined}
+                                >
+                                  {!profilePhoto && (
+                                    <CameraAltIcon sx={{ fontSize: 40, color: '#9e9e9e' }} />
+                                  )}
+                                </Avatar>
+                                
+                                {/* Hover Overlay */}
+                                <Box
+                                  className="profile-photo-overlay"
+                                  sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    opacity: 0,
+                                    transition: 'opacity 0.3s ease',
+                                  }}
+                                >
+                                  <CameraAltIcon sx={{ fontSize: 32, color: 'white' }} />
+                                </Box>
+                              </Badge>
+                            </Box>
+                          </Tooltip>
+                        </Box>
+
+                        {/* Photo Menu */}
+                        <Menu
+                          anchorReference="anchorPosition"
+                          anchorPosition={photoMenuAnchor || undefined}
+                          open={Boolean(photoMenuAnchor)}
+                          onClose={() => setPhotoMenuAnchor(null)}
+                          PaperProps={{
+                            sx: { minWidth: 200 }
+                          }}
                         >
-                          <Avatar
-                            sx={{ width: 100, height: 100 }}
-                            src={profilePhoto ? URL.createObjectURL(profilePhoto) : undefined}
-                          />
-                        </Badge>
-                        <Box>
-                          <Button variant="outlined" component="label" size="large">
-                            Upload Photo
-                            <input
-                              hidden
-                              accept="image/*"
-                              type="file"
-                              onChange={(e) => setProfilePhoto(e.target.files?.[0] || null)}
-                            />
-                          </Button>
-                          <Typography variant="caption" display="block" sx={{ mt: 1 }} color="text.secondary">
-                            {profilePhoto ? '✓ ' + profilePhoto.name : 'Profiles with photos get 3x more interest'}
+                          <MenuItem
+                            onClick={() => {
+                              const input = document.createElement('input')
+                              input.type = 'file'
+                              input.accept = 'image/*'
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0]
+                                if (file) handlePhotoUpload(file)
+                                setPhotoMenuAnchor(null)
+                              }
+                              input.click()
+                            }}
+                          >
+                            <ListItemIcon>
+                              <CloudUploadIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText>Upload from device</ListItemText>
+                          </MenuItem>
+                          <MenuItem
+                            onClick={() => {
+                              const input = document.createElement('input')
+                              input.type = 'file'
+                              input.accept = 'image/*'
+                              input.setAttribute('capture', 'user')
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0]
+                                if (file) handlePhotoUpload(file)
+                                setPhotoMenuAnchor(null)
+                              }
+                              input.click()
+                            }}
+                          >
+                            <ListItemIcon>
+                              <CameraAltIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText>Take photo</ListItemText>
+                          </MenuItem>
+                          {profilePhoto && (
+                            <MenuItem
+                              onClick={() => {
+                                handleRemovePhoto()
+                                setPhotoMenuAnchor(null)
+                              }}
+                              sx={{ color: 'error.main' }}
+                            >
+                              <ListItemIcon>
+                                <DeleteIcon fontSize="small" color="error" />
+                              </ListItemIcon>
+                              <ListItemText>Remove photo</ListItemText>
+                            </MenuItem>
+                          )}
+                        </Menu>
+
+                        {/* Info Section */}
+                        <Box sx={{ flex: 1, pt: { xs: 1, sm: 0 } }}>
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight={600}
+                            sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}
+                          >
+                            Profile Photo
+                            {!profilePhoto && (
+                              <Typography
+                                component="span"
+                                variant="caption"
+                                sx={{ color: '#666', fontWeight: 400, ml: 0.5 }}
+                              >
+                                (Recommended)
+                              </Typography>
+                            )}
                           </Typography>
+
+                          {profilePhoto && photoMetadata ? (
+                            <Box>
+                              <Box
+                                sx={{
+                                  p: 2,
+                                  bgcolor: '#f8f9fa',
+                                  border: '1px solid #e9ecef',
+                                  borderRadius: 1,
+                                  mb: 2,
+                                }}
+                              >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                  <CheckCircleIcon sx={{ fontSize: 18, color: '#4caf50' }} />
+                                  <Typography variant="body2" fontWeight={600} color="#2e7d32">
+                                    Photo uploaded
+                                  </Typography>
+                                </Box>
+                                <Typography variant="caption" color="text.secondary">
+                                  {photoMetadata.name} • {(photoMetadata.size / 1024).toFixed(1)} KB
+                                </Typography>
+                              </Box>
+
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<EditIcon />}
+                                onClick={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect()
+                                  setPhotoMenuAnchor({ left: rect.left, top: rect.bottom })
+                                }}
+                                sx={{ textTransform: 'none' }}
+                              >
+                                Change photo
+                              </Button>
+                            </Box>
+                          ) : (
+                            <Box>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{
+                                  mb: 1.5,
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                Add a professional photo to build trust with students. A good photo can increase booking rates by up to 3×.
+                              </Typography>
+                              
+                              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                <Chip
+                                  icon={<CheckIcon fontSize="small" />}
+                                  label="Clear lighting"
+                                  size="small"
+                                  variant="outlined"
+                                />
+                                <Chip
+                                  icon={<CheckIcon fontSize="small" />}
+                                  label="Professional attire"
+                                  size="small"
+                                  variant="outlined"
+                                />
+                                <Chip
+                                  icon={<CheckIcon fontSize="small" />}
+                                  label="Face the camera"
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              </Box>
+                              
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ display: 'block', mt: 2 }}
+                              >
+                                Click to upload or take a photo
+                              </Typography>
+                            </Box>
+                          )}
                         </Box>
                       </Box>
                     </Grid>
@@ -552,12 +846,19 @@ export default function BecomeTutor() {
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="City"
+                      <Autocomplete
+                        options={availableCities}
                         value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        fullWidth
-                        helperText="For in-person coordination"
+                        onChange={(_, value) => setCity(value || '')}
+                        disabled={!country || availableCities.length === 0}
+                        freeSolo
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="City"
+                            helperText={!country ? 'Select a country first' : 'Select or type a city'}
+                          />
+                        )}
                       />
                     </Grid>
 
@@ -586,7 +887,7 @@ export default function BecomeTutor() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                           <Avatar
                             sx={{ width: 60, height: 60 }}
-                            src={profilePhoto ? URL.createObjectURL(profilePhoto) : undefined}
+                            src={photoPreview || undefined}
                           />
                           <Box>
                             <Typography variant="h6">

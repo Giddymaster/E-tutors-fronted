@@ -1,33 +1,31 @@
 import { useState, useEffect } from 'react'
 
-interface Country {
-  name: {
-    common: string
-    official: string
-  }
-  flags: {
-    svg: string
-    png: string
-  }
-  cca2: string
+export interface CountryData {
+  iso2: string
+  iso3: string
+  country: string
+  cities: string[]
 }
 
 export const useCountries = () => {
-  const [countries, setCountries] = useState<Country[]>([])
+  const [countries, setCountries] = useState<CountryData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await fetch('https://restcountries.com/v3.1/all')
+        const response = await fetch('https://countriesnow.space/api/v0.1/countries')
         if (!response.ok) throw new Error('Failed to fetch countries')
         
         const data = await response.json()
         
-        // Sort by common name
-        const sorted = data.sort((a: Country, b: Country) => 
-          a.name.common.localeCompare(b.name.common)
+        // Extract countries array from API response
+        const countriesArray = data.data || []
+        
+        // Sort by country name
+        const sorted = countriesArray.sort((a: CountryData, b: CountryData) => 
+          a.country.localeCompare(b.country)
         )
         
         setCountries(sorted)
@@ -38,15 +36,15 @@ export const useCountries = () => {
         
         // Fallback to basic country list if API fails
         setCountries([
-          { name: { common: 'United States', official: 'United States of America' }, flags: { svg: '', png: '' }, cca2: 'US' },
-          { name: { common: 'United Kingdom', official: 'United Kingdom' }, flags: { svg: '', png: '' }, cca2: 'GB' },
-          { name: { common: 'Kenya', official: 'Kenya' }, flags: { svg: '', png: '' }, cca2: 'KE' },
-          { name: { common: 'Canada', official: 'Canada' }, flags: { svg: '', png: '' }, cca2: 'CA' },
-          { name: { common: 'Australia', official: 'Australia' }, flags: { svg: '', png: '' }, cca2: 'AU' },
-          { name: { common: 'India', official: 'India' }, flags: { svg: '', png: '' }, cca2: 'IN' },
-          { name: { common: 'Germany', official: 'Germany' }, flags: { svg: '', png: '' }, cca2: 'DE' },
-          { name: { common: 'France', official: 'France' }, flags: { svg: '', png: '' }, cca2: 'FR' },
-        ] as Country[])
+          { iso2: 'US', iso3: 'USA', country: 'United States', cities: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'] },
+          { iso2: 'GB', iso3: 'GBR', country: 'United Kingdom', cities: ['London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow'] },
+          { iso2: 'KE', iso3: 'KEN', country: 'Kenya', cities: ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret'] },
+          { iso2: 'CA', iso3: 'CAN', country: 'Canada', cities: ['Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Ottawa'] },
+          { iso2: 'AU', iso3: 'AUS', country: 'Australia', cities: ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'] },
+          { iso2: 'IN', iso3: 'IND', country: 'India', cities: ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai'] },
+          { iso2: 'DE', iso3: 'DEU', country: 'Germany', cities: ['Berlin', 'Munich', 'Frankfurt', 'Cologne', 'Hamburg'] },
+          { iso2: 'FR', iso3: 'FRA', country: 'France', cities: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice'] },
+        ])
       } finally {
         setLoading(false)
       }
