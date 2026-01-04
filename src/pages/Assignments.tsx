@@ -310,81 +310,98 @@ export default function Assignments() {
           )}
 
           <Typography variant="h6" sx={{ mb: 1 }}>
-            Available Assignments
+            {user && user.role === 'STUDENT' ? 'My Posted Assignments' : 'Available Assignments to Bid On'}
           </Typography> 
           <Divider sx={{ mb: 2 }} />
           <Grid container spacing={2}>
             {assignments.length === 0 && (
-              <Grid item xs={12}><Typography color="text.secondary">No assignments yet — be the first to post one.</Typography></Grid>
+              <Grid item xs={12}><Typography color="text.secondary">{user && user.role === 'STUDENT' ? 'You haven\'t posted any assignments yet.' : 'No assignments available — check back later.'}</Typography></Grid>
             )}
             {assignments
               .filter((a) => {
-                // For tutors, hide assignments they have already bid on
-                if (user && user.role === 'TUTOR' && a.bids.some((b) => b.tutorId === user.id)) {
-                  return false
+                // For students: show only assignments THEY posted
+                if (user && user.role === 'STUDENT') {
+                  return a.createdBy === user.name
                 }
-
-                if (recommendedOnly && user && user.role === 'TUTOR') {
-                  // only show assignments that match tutor subjects using synonyms-aware matching
-                  return matchesAssignment(a.subject, tutorSubjects)
+                
+                // For tutors: show all assignments except those they already bid on
+                if (user && user.role === 'TUTOR') {
+                  if (a.bids.some((b) => b.tutorId === user.id)) {
+                    return false
+                  }
+                  if (recommendedOnly && tutorSubjects.length > 0) {
+                    return matchesAssignment(a.subject, tutorSubjects)
+                  }
+                  return true
                 }
-                return true
+                
+                // Non-logged-in users: show nothing
+                return false
               })
               .map((a) => (
               <Grid item xs={12} key={a.id} id={`assignment-${a.id}`}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="h6">{a.title}</Typography>
-                      {user && user.role === 'TUTOR' && tutorSubjects.length > 0 && (() => {
-                        const match = matchesAssignment(a.subject, tutorSubjects)
-                        return match ? <Chip label="Recommended" color="primary" size="small" /> : null
-                      })()}
+                      <Box>
+                        <Typography variant="h6">{a.title}</Typography>
+                        {user && user.role === 'TUTOR' && tutorSubjects.length > 0 && (() => {
+                          const match = matchesAssignment(a.subject, tutorSubjects)
+                          return match ? <Chip label="Matches your expertise" color="primary" size="small" sx={{ mt: 0.5 }} /> : null
+                        })()}
+                      </Box>
+                      <Chip 
+                        label={`${a.bids.length} bid${a.bids.length !== 1 ? 's' : ''}`}
+                        variant="outlined"
+                        size="small"
+                      />
                     </Box>
 
                     {/* shortened preview */}
                     <Typography variant="body2" color="text.secondary">Subject: {a.subject} • Budget: ${a.budget}</Typography>
                     <Typography sx={{ mt: 1 }}>{a.description.slice(0, 200)}{a.description.length > 200 ? '…' : ''}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>Posted by: {a.createdBy || 'Anonymous'}</Typography>
+                    {user && user.role === 'STUDENT' && (
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>Posted: {a.createdBy || 'You'}</Typography>
+                    )}
 
                     <Box sx={{ mt: 2 }}>
-                      <Typography variant="subtitle2">Bids ({a.bids.length})</Typography>
-                      {a.bids.length === 0 && <Typography variant="body2" color="text.secondary">No bids yet</Typography>}
-                      {a.bids.map((b) => (
-                        <Box key={b.id} sx={{ border: '1px solid', borderColor: 'divider', p: 1, mt: 1, borderRadius: 1, backgroundColor: a.acceptedBidId === b.id ? 'rgba(76,175,80,0.06)' : 'inherit' }}>
-                          <Typography variant="body2"><strong>{b.tutorName}</strong> — ${b.amount} <span style={{ opacity: 0.8 }}>({b.id})</span></Typography>
-                          {b.message && <Typography variant="body2" color="text.secondary">{b.message}</Typography>}
-                          {a.acceptedBidId === b.id && <Typography variant="body2" color="success.main">Accepted ✓</Typography>}
-                          {/* If student viewing their job, allow accept */}
-                          {user && user.name === a.createdBy && a.acceptedBidId !== b.id && (
-                            <Button size="small" sx={{ mt: 1 }} onClick={() => acceptBid(a.id, b.id)}>Accept this bid</Button>
-                          )} 
+                      {/* For STUDENTS: show all bids they received */}
+                      {user && user.role === 'STUDENT' && a.createdBy === user.name && (
+                        <Box>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Bids Received ({a.bids.length})</Typography>
+                          {a.bids.length === 0 && <Typography variant="body2" color="text.secondary">No bids yet</Typography>}
+                          {a.bids.map((b) => (
+                            <Box key={b.id} sx={{ border: '1px solid', borderColor: 'divider', p: 1.5, mt: 1, borderRadius: 1, backgroundColor: a.acceptedBidId === b.id ? 'rgba(76,175,80,0.08)' : 'inherit' }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Box>
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{b.tutorName}</Typography>
+                                  <Typography variant="h6" color="primary" sx={{ fontWeight: 700, mt: 0.5 }}>${b.amount}</Typography>
+                                </Box>
+                                {a.acceptedBidId === b.id && <Chip label="Accepted" color="success" size="small" />}
+                              </Box>
+                              {b.message && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{b.message}</Typography>}
+                              {!a.acceptedBidId && (
+                                <Button size="small" variant="contained" sx={{ mt: 1 }} onClick={() => acceptBid(a.id, b.id)}>Accept Bid</Button>
+                              )} 
+                            </Box>
+                          ))}
                         </Box>
-                      ))}
+                      )}
+
+                      {/* For TUTORS: show bid count only and place bid button */}
+                      {user && user.role === 'TUTOR' && (
+                        <Box>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Posted by: {a.createdBy || 'Anonymous'}</Typography>
+                          <Button size="small" variant="contained" onClick={() => handleBid(a.id)}>Place Bid</Button>
+                        </Box>
+                      )}
 
                       {/* View full assignment - opens dialog */}
                       <Box sx={{ mt: 2 }}>
-                        <Button size="small" onClick={() => navigate(`/assignments#${a.id}`)}>View Full Assignment</Button>
+                        <Button size="small" onClick={() => navigate(`/assignments#${a.id}`)}>View Full Details</Button>
                       </Box>
                     </Box>
                   </CardContent>
-                  <CardActions>
-                    {user && user.role === 'TUTOR' && (
-                      // If tutor already bid on this assignment, show cancel; otherwise show place bid
-                      a.bids.some((b) => b.tutorId === user.id) ? (
-                        <Button size="small" onClick={() => cancelBid(a.id)}>Cancel My Bid</Button>
-                      ) : (
-                        <Button size="small" onClick={() => handleBid(a.id)}>Place Bid</Button>
-                      )
-                    )}
-
-                    {/* For students, show a quick note if bid accepted */}
-                    {a.acceptedBidId && (
-                      <Typography variant="body2" color="success.main">A bid has been accepted for this assignment</Typography>
-                    )}
-
-                    <Typography variant="caption" sx={{ ml: 2 }}>id: {a.id}</Typography>
-                  </CardActions>
                 </Card>
               </Grid>
             ))}
@@ -423,12 +440,30 @@ export default function Assignments() {
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2">Bids ({selectedAssignment.bids.length})</Typography>
                   {selectedAssignment.bids.length === 0 && <Typography variant="body2" color="text.secondary">No bids yet</Typography>}
-                  {selectedAssignment.bids.map((b) => (
-                    <Box key={b.id} sx={{ border: '1px solid', borderColor: 'divider', p: 1, mt: 1, borderRadius: 1 }}>
-                      <Typography variant="body2"><strong>{b.tutorName}</strong> — ${b.amount}</Typography>
-                      {b.message && <Typography variant="body2" color="text.secondary">{b.message}</Typography>}
-                    </Box>
-                  ))}
+                  
+                  {/* Show full bid details only to students who posted this assignment */}
+                  {user && user.role === 'STUDENT' && selectedAssignment.createdBy === user.name && (
+                    selectedAssignment.bids.map((b) => (
+                      <Box key={b.id} sx={{ border: '1px solid', borderColor: 'divider', p: 1.5, mt: 1, borderRadius: 1, backgroundColor: selectedAssignment.acceptedBidId === b.id ? 'rgba(76,175,80,0.08)' : 'inherit' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{b.tutorName}</Typography>
+                            <Typography variant="h6" color="primary" sx={{ fontWeight: 700, mt: 0.5 }}>${b.amount}</Typography>
+                          </Box>
+                          {selectedAssignment.acceptedBidId === b.id && <Chip label="Accepted" color="success" size="small" />}
+                        </Box>
+                        {b.message && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{b.message}</Typography>}
+                        {!selectedAssignment.acceptedBidId && (
+                          <Button size="small" variant="contained" sx={{ mt: 1 }} onClick={() => acceptBid(selectedAssignment.id, b.id)}>Accept Bid</Button>
+                        )}
+                      </Box>
+                    ))
+                  )}
+                  
+                  {/* For tutors, show only bid count */}
+                  {user && user.role === 'TUTOR' && (
+                    <Typography variant="body2" color="text.secondary">Total bids received: {selectedAssignment.bids.length}</Typography>
+                  )}
                 </Box>
 
               </DialogContent>
