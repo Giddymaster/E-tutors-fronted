@@ -145,7 +145,7 @@ export default function Tutors() {
                   <Grid container spacing={2} sx={{ mt: 1 }}>
                     {fallbackTutors.map((t: any) => (
                       <Grid item xs={12} md={6} key={t.id}>
-                        <TutorCard tutor={{ id: t.id, name: t.user?.name, bio: t.bio }} />
+                        <TutorCard tutor={t} />
                       </Grid>
                     ))}
                   </Grid>
@@ -157,7 +157,7 @@ export default function Tutors() {
               <Grid container spacing={2}>
                 {tutors.map((t: any) => (
                   <Grid item xs={12} md={6} key={t.id}>
-                    <TutorCard tutor={{ id: t.id, name: t.user?.name, bio: t.bio }} />
+                    <TutorCard tutor={t} />
                   </Grid>
                 ))}
               </Grid>

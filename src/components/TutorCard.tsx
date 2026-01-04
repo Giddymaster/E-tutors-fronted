@@ -15,17 +15,24 @@ export default function TutorCard({ tutor }: any) {
   const navigate = useNavigate()
   const { user } = useAuth()
 
+  const tutorName = tutor?.user?.name || tutor?.name || 'Tutor'
+  const tutorBio = tutor?.bio || tutor?.shortBio || ''
+
   const primarySubject = (() => {
-    const subs = tutor?.raw?.subjects || tutor?.subjects || []
-    if (Array.isArray(subs) && subs.length > 0) return String(subs[0])
-    if (typeof subs === 'string' && subs) return subs
+    const subs = tutor?.subjects || []
+    if (Array.isArray(subs) && subs.length > 0) {
+      // Capitalize first letter of subject
+      const subj = String(subs[0])
+      return subj.charAt(0).toUpperCase() + subj.slice(1)
+    }
     return 'General'
   })()
 
   const hourlyRate = (() => {
-    const rate = tutor?.hourlyRate ?? tutor?.raw?.hourlyRate ?? 20
-    const num = typeof rate === 'number' ? rate : Number(rate || 20)
-    return isNaN(num) ? 20 : num
+    const rate = tutor?.hourlyRate
+    if (rate === null || rate === undefined) return 0
+    const num = typeof rate === 'number' ? rate : Number(rate)
+    return isNaN(num) ? 0 : num
   })()
 
   const handleBook = () => {
@@ -37,34 +44,37 @@ export default function TutorCard({ tutor }: any) {
   }
 
   return (
-    <Card>
-      <CardContent>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ flexGrow: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-          <Box>
-            <Typography variant="h6">{tutor.name || 'Tutor Name'}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-              <Tooltip title={`Rating: ${(tutor?.ratingComputed ?? tutor?.rating ?? 0).toFixed(1)} • ${tutor?.reviewsCount ?? 0} reviews`}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>{tutorName}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
+              <Tooltip title={`Rating: ${(tutor?.ratingComputed ?? 0).toFixed(1)} • ${tutor?.reviewsCount ?? 0} reviews`}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Rating value={Number((tutor?.ratingComputed ?? tutor?.rating ?? 0))} precision={0.1} size="small" readOnly />
+                  <Rating value={Number(tutor?.ratingComputed ?? 0)} precision={0.1} size="small" readOnly />
+                  <Typography variant="caption" color="text.secondary">({tutor?.reviewsCount ?? 0})</Typography>
                 </Box>
               </Tooltip>
 
               <Tooltip title={`${tutor?.completedCount ?? 0} completed bookings`}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <CheckCircleIcon fontSize="small" color="success" />
-                  <Typography variant="body2">{tutor?.completedCount ?? 0} completed</Typography>
+                  <Typography variant="body2">{tutor?.completedCount ?? 0}</Typography>
                 </Box>
               </Tooltip>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
-            <Chip label={primarySubject} size="small" />
-            <Typography variant="caption" color="text.secondary">${hourlyRate.toFixed(0)}/hr</Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, ml: 1 }}>
+            <Chip label={primarySubject} size="small" color="primary" />
+            <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
+              ${hourlyRate > 0 ? hourlyRate.toFixed(0) : '—'}/hr
+            </Typography>
           </Box>
         </Box>
 
-        <Typography variant="body2" sx={{ mb: 2 }}>
-          {summarize(tutor.bio || (tutor.raw && tutor.raw.bio), 30)}
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1.5 }}>
+          {summarize(tutorBio, 30)}
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1 }}>
