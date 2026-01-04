@@ -58,6 +58,7 @@ import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import { useNavigate } from 'react-router-dom'
 import { useCountries } from '../hooks/useCountries'
+import CameraCapture from '../components/CameraCapture'
 
 const STEPS = [
   'Professional Profile',
@@ -136,6 +137,7 @@ export default function BecomeTutor() {
   const [photoMenuAnchor, setPhotoMenuAnchor] = useState<{ left: number; top: number } | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoMetadata, setPhotoMetadata] = useState<{ name: string; size: number } | null>(null)
+  const [cameraOpen, setCameraOpen] = useState(false)
 
   const navigate = useNavigate()
   const { user, register, login } = useAuth()
@@ -570,16 +572,8 @@ export default function BecomeTutor() {
                           </MenuItem>
                           <MenuItem
                             onClick={() => {
-                              const input = document.createElement('input') as HTMLInputElement & { capture: string }
-                              input.type = 'file'
-                              input.accept = 'image/*'
-                              input.capture = 'user'
-                              input.onchange = (e) => {
-                                const file = (e.target as HTMLInputElement).files?.[0]
-                                if (file) handlePhotoUpload(file)
-                                setPhotoMenuAnchor(null)
-                              }
-                              input.click()
+                              setCameraOpen(true)
+                              setPhotoMenuAnchor(null)
                             }}
                           >
                             <ListItemIcon>
@@ -1711,6 +1705,16 @@ export default function BecomeTutor() {
           </Grid>
         </Grid>
       </Box>
+
+      {/* Camera Capture Modal */}
+      <CameraCapture
+        open={cameraOpen}
+        onCapture={(file) => {
+          handlePhotoUpload(file)
+          setCameraOpen(false)
+        }}
+        onClose={() => setCameraOpen(false)}
+      />
     </Box>
   )
 }
