@@ -110,7 +110,7 @@ export default function BecomeTutor() {
   const [teachingStatement, setTeachingStatement] = useState('')
   
   const [weeklyHours, setWeeklyHours] = useState('')
-  const [formatPreference, setFormatPreference] = useState<string[]>(['Online'])
+  const [formatPreference, setFormatPreference] = useState<string>('Remote')
   const [timeZone, setTimeZone] = useState('')
   const [hourlyRate, setHourlyRate] = useState<number | ''>('')
   const [currency, setCurrency] = useState('USD')
@@ -327,10 +327,7 @@ export default function BecomeTutor() {
   }
 
   const toggleFormat = (fmt: string) => {
-    setFormatPreference((prev) => {
-      if (prev.includes(fmt)) return prev.filter((p) => p !== fmt)
-      return [...prev, fmt]
-    })
+    setFormatPreference(fmt)
   }
 
   const processPayment = async (method: string) => {
@@ -1187,13 +1184,13 @@ export default function BecomeTutor() {
                         Preferred Format
                       </Typography>
                       <Stack direction="row" spacing={2} flexWrap="wrap">
-                        {['Online', 'In-person', 'Hybrid'].map((fmt) => (
+                        {['Remote', 'In-person', 'Hybrid'].map((fmt) => (
                           <Chip
                             key={fmt}
                             label={fmt}
                             onClick={() => toggleFormat(fmt)}
-                            color={formatPreference.includes(fmt) ? 'primary' : 'default'}
-                            variant={formatPreference.includes(fmt) ? 'filled' : 'outlined'}
+                            color={formatPreference === fmt ? 'primary' : 'default'}
+                            variant={formatPreference === fmt ? 'filled' : 'outlined'}
                           />
                         ))}
                       </Stack>
