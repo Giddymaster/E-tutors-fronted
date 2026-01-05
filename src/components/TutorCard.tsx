@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, CardContent, Typography, Button, Box, Chip, Tooltip, Rating } from '@mui/material'
+import { Card, CardContent, Typography, Button, Box, Chip, Tooltip, Rating, Stack } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -16,10 +16,14 @@ export default function TutorCard({ tutor }: any) {
   const { user } = useAuth()
 
   const tutorName = tutor?.user?.name || tutor?.name || 'Tutor'
-  const tutorBio = tutor?.bio || tutor?.shortBio || ''
+
+  const subjects = tutor?.subjects || tutor?.specialization || tutor?.raw?.subjects || []
+  const tutorBio = tutor?.shortBio || tutor?.bio || tutor?.raw?.shortBio || tutor?.raw?.bio || ''
+  const teachingPhilosophyRaw = tutor?.teachingStatement || tutor?.teachingPhilosophy || tutor?.bio || tutor?.raw?.bio || ''
+  const teachingPhilosophy = teachingPhilosophyRaw === tutorBio ? '' : teachingPhilosophyRaw
 
   const primarySubject = (() => {
-    const subs = tutor?.subjects || []
+    const subs = Array.isArray(subjects) ? subjects : []
     if (Array.isArray(subs) && subs.length > 0) {
       // Capitalize first letter of subject
       const subj = String(subs[0])
@@ -29,7 +33,7 @@ export default function TutorCard({ tutor }: any) {
   })()
 
   const hourlyRate = (() => {
-    const rate = tutor?.hourlyRate
+    const rate = tutor?.hourlyRate ?? tutor?.raw?.hourlyRate
     if (rate === null || rate === undefined) return 0
     const num = typeof rate === 'number' ? rate : Number(rate)
     return isNaN(num) ? 0 : num
@@ -46,40 +50,51 @@ export default function TutorCard({ tutor }: any) {
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>{tutorName}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
-              <Tooltip title={`Rating: ${(tutor?.ratingComputed ?? 0).toFixed(1)} • ${tutor?.reviewsCount ?? 0} reviews`}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Rating value={Number(tutor?.ratingComputed ?? 0)} precision={0.1} size="small" readOnly />
-                  <Typography variant="caption" color="text.secondary">({tutor?.reviewsCount ?? 0})</Typography>
-                </Box>
-              </Tooltip>
-
-              <Tooltip title={`${tutor?.completedCount ?? 0} completed bookings`}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <CheckCircleIcon fontSize="small" color="success" />
-                  <Typography variant="body2">{tutor?.completedCount ?? 0}</Typography>
-                </Box>
-              </Tooltip>
+        <Stack spacing={1.25}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>{tutorName}</Typography>
+              <Chip label={primarySubject} size="small" color="primary" sx={{ mt: 0.5 }} />
             </Box>
-          </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, ml: 1 }}>
-            <Chip label={primarySubject} size="small" color="primary" />
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
+            <Typography variant="h6" color="primary" sx={{ fontWeight: 800 }}>
               ${hourlyRate > 0 ? hourlyRate.toFixed(0) : '—'}/hr
             </Typography>
           </Box>
-        </Box>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1.5 }}>
-          {summarize(tutorBio, 30)}
-        </Typography>
+          {tutorBio ? (
+            <Box>
+              <Typography variant="overline" color="text.secondary">About</Typography>
+              <Typography variant="body2" color="text.primary">{summarize(tutorBio, 40)}</Typography>
+            </Box>
+          ) : null}
 
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="contained" size="small" onClick={handleBook}>Book</Button>
-        </Box>
+          {teachingPhilosophy ? (
+            <Box>
+              <Typography variant="overline" color="text.secondary">Teaching philosophy</Typography>
+              <Typography variant="body2" color="text.primary">{summarize(teachingPhilosophy, 40)}</Typography>
+            </Box>
+          ) : null}
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Tooltip title={`Rating: ${(tutor?.ratingComputed ?? tutor?.rating ?? 0).toFixed(1)} • ${tutor?.reviewsCount ?? 0} reviews`}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Rating value={Number(tutor?.ratingComputed ?? tutor?.rating ?? 0)} precision={0.1} size="small" readOnly />
+                <Typography variant="caption" color="text.secondary">({tutor?.reviewsCount ?? 0})</Typography>
+              </Box>
+            </Tooltip>
+
+            <Tooltip title={`${tutor?.completedCount ?? 0} completed bookings`}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <CheckCircleIcon fontSize="small" color="success" />
+                <Typography variant="body2">{tutor?.completedCount ?? 0}</Typography>
+              </Box>
+            </Tooltip>
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button variant="contained" size="small" onClick={handleBook}>Book</Button>
+          </Box>
+        </Stack>
       </CardContent>
     </Card>
   )
