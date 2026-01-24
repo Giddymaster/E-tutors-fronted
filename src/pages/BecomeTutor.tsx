@@ -59,6 +59,7 @@ import api from '../utils/api'
 import { useNavigate } from 'react-router-dom'
 import { useCountries } from '../hooks/useCountries'
 import CameraCapture from '../components/CameraCapture'
+import { PaystackButton } from 'react-paystack'
 
 const STEPS = [
   'Professional Profile',
@@ -330,6 +331,33 @@ export default function BecomeTutor() {
     setFormatPreference(fmt)
   }
 
+  const handlePaystackSuccess = async (reference: any) => {
+    try {
+      // Verify payment on backend
+      const verifyData = {
+        reference: reference.reference,
+        method: 'Paystack',
+        amount: 3000, // amount in kobo
+        email,
+      }
+      
+      await api.post('/payments/verify-paystack', verifyData)
+      setPaymentCompleted(true)
+      setSuccessMessage(`Payment of $30 via Paystack processed successfully!`)
+      setPaymentError(null)
+    } catch (err: any) {
+      setPaymentError('Payment verification failed. Please contact support.')
+      console.error('Payment verification error:', err)
+    } finally {
+      setProcessingPayment(false)
+    }
+  }
+
+  const handlePaystackClose = () => {
+    setProcessingPayment(false)
+    setPaymentError('Payment cancelled')
+  }
+
   const processPayment = async (method: string) => {
     if (!method) {
       setPaymentError('Select a payment method')
@@ -337,6 +365,14 @@ export default function BecomeTutor() {
     }
     setPaymentError(null)
     setProcessingPayment(true)
+
+    // Handle Paystack separately using Paystack button
+    if (method === 'Paystack') {
+      // The button will handle the payment
+      // This function just sets the method, actual payment is processed by PaystackButton
+      return
+    }
+
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
@@ -1455,15 +1491,13 @@ export default function BecomeTutor() {
               {!paymentCompleted ? (
                 <Box>
                   <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2 }}>
-                    Select Payment Method:
+                    Complete Payment:
                   </Typography>
                   <Grid container spacing={2} sx={{ mb: 3 }}>
                     {[
-                      { name: 'PayPal', icon: <SiPaypal size={28} color="#0070ba" />, color: '#0070ba' },
-                      { name: 'Credit Card', icon: <CreditCardIcon sx={{ fontSize: 28, color: '#1976d2' }} />, color: '#1976d2' },
-                      { name: 'Stripe', icon: <SiStripe size={28} color="#6772e5" />, color: '#6772e5' },
+                      { name: 'Use card to complete transaction', icon: <CreditCardIcon sx={{ fontSize: 28, color: '#13B5EA' }} />, color: '#13B5EA' },
                     ].map((method) => (
-                      <Grid item xs={12} sm={4} key={method.name}>
+                      <Grid item xs={12} key={method.name}>
                         <Card
                           onClick={() => !processingPayment && setPaymentMethod(method.name)}
                           sx={{
@@ -1506,18 +1540,17 @@ export default function BecomeTutor() {
                   )}
 
                   {paymentMethod && (
-                    <Button
-                      variant="contained"
-                      color="success"
-                      fullWidth
-                      size="large"
-                      onClick={() => processPayment(paymentMethod)}
+                    <PaystackButton
+                      email={email}
+                      amount={3000} // amount in cents (3000 cents = $30)
+                      currency="USD"
+                      publicKey={import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || ''}
+                      text={processingPayment ? 'Processing...' : 'Pay Now'}
+                      onSuccess={handlePaystackSuccess}
+                      onClose={handlePaystackClose}
+                      className="paystack-button"
                       disabled={processingPayment}
-                      startIcon={processingPayment ? <CircularProgress color="inherit" size={20} /> : null}
-                      sx={{ py: 1.5, fontSize: '1rem', fontWeight: 600 }}
-                    >
-                      {processingPayment ? 'Processing...' : `Pay $30 with ${paymentMethod}`}
-                    </Button>
+                    />
                   )}
                 </Box>
               ) : (
@@ -1742,3 +1775,33 @@ function passwordStrengthColor(pw: string) {
   if (pct < 70) return '#ff9800'
   return '#4caf50'
 }
+
+// Styles for Paystack button
+const paystackButtonStyles = `
+  .paystack-button {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .paystack-button:hover:not(:disabled) {
+    background-color: #27663a;
+  }
+  
+  .paystack-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+`
+
+// Inject styles
+const styleSheet = document.createElement('style')
+styleSheet.innerText = paystackButtonStyles
+document.head.appendChild(styleSheet)

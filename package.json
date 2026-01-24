@@ -16,9 +16,11 @@
     "@mui/x-date-pickers": "^8.23.0",
     "axios": "^1.4.0",
     "dayjs": "^1.11.19",
+    "paystack": "^2.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
+    "react-paystack": "^6.0.0",
     "react-router-dom": "^6.14.1"
   },
   "devDependencies": {
