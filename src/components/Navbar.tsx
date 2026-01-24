@@ -79,7 +79,24 @@ export default function Navbar() {
             >
               {user && user.role === 'TUTOR' ? 'Available Jobs' : 'Post Assignment'}
             </Button>
-          )}          {/* <Button
+          )}
+
+          {user && (
+            <Button
+              color="inherit"
+              component={Link}
+              to="/ai-tutor"
+              sx={{
+                color: isActive('/ai-tutor') ? 'primary.main' : 'inherit',
+                textDecoration: isActive('/ai-tutor') ? 'underline' : 'none',
+                fontWeight: isActive('/ai-tutor') ? 700 : 500
+              }}
+            >
+              AI Tutor
+            </Button>
+          )}
+
+          {/* <Button
             color="inherit"
             component={Link}
             to="/become-tutor"

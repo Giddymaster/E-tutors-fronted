@@ -57,7 +57,12 @@ api.interceptors.response.use(
               return newToken
             })
             .catch((refreshErr) => {
+              // Silently logout on refresh failure (expected when session expires)
               logout()
+              // Only log in development
+              if (import.meta.env.DEV) {
+                console.warn('Session refresh failed:', refreshErr.response?.status)
+              }
               throw refreshErr
             })
             .finally(() => { refreshPromise = null })

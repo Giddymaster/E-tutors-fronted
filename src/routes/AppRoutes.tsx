@@ -16,6 +16,8 @@ import PostJob from '../pages/PostJob'
 import FAQ from '../pages/FAQ'
 import Profile from '../pages/Profile'
 import OAuthCallback from '../pages/OAuthCallback'
+import AITutor from '../pages/AITutor'
+import PurchaseCredits from '../pages/PurchaseCredits'
 import StudentDashboard from '../components/StudentDashboard'
 import TutorDashboard from '../components/TutorDashboard'
 import TutorLanding from '../pages/TutorLanding'
@@ -44,6 +46,8 @@ export default function AppRoutes() {
         <Route path="/bid/:jobId" element={<ProtectedRoute requiredRole={'TUTOR'}><Bid /></ProtectedRoute>} />
         <Route path="/post-job" element={<ProtectedRoute requiredRole={'STUDENT'}><PostJob /></ProtectedRoute>} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
+        <Route path="/ai-tutor" element={<ProtectedRoute><AITutor /></ProtectedRoute>} />
+        <Route path="/purchase-credits" element={<ProtectedRoute><PurchaseCredits /></ProtectedRoute>} />
   
         <Route
           path="/student"
