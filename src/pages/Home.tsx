@@ -374,7 +374,7 @@ export default function Home() {
             />
             <Box
               component="img"
-              src="https://images.istockphoto.com/photo/young-beautiful-woman-in-headphones-working-with-laptop-inside-office-at-workplace-gm1963249822-557964692?utm_source=pexels&utm_medium=affiliate&utm_campaign=sponsored_photo&utm_content=srp_inline_media&utm_term=online%20tutoring"
+              src="https://images.pexels.com/photos/4145153/pexels-photo-4145153.jpeg"
               alt="Woman with headphones working at laptop"
               sx={{
                 width: '100%',
