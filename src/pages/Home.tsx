@@ -380,12 +380,12 @@ export default function Home() {
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                objectPosition: 'center center',
+                objectPosition: 'center',
                 transformOrigin: 'right center',
                 position: 'absolute',
                 top: 0,
                 right: 0,
-                clipPath: 'inset(15% 0 15% 0)',
+                borderRadius: '8px',
                 '&:hover': {
                   filter: 'brightness(1.05)'
                 }
