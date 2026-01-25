@@ -157,10 +157,10 @@ export default function Home() {
     <>
       {/* ✅ Hero Section with Grid layout */}
       <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-        <Grid container sx={{ minHeight: '100vh', flexDirection: { xs: 'column-reverse', md: 'row' } }}>
+        <Grid container sx={{ minHeight: '100vh' }}>
           {/* Left side - Content */}
           <Grid item xs={12} md={6} sx={{ 
-            display: 'flex', 
+            display: { xs: 'none', md: 'flex' },
             alignItems: 'center', 
             justifyContent: 'center',
             p: { xs: 3, md: 6 },
@@ -168,7 +168,7 @@ export default function Home() {
             position: 'relative',
             zIndex: 1,
             boxShadow: { md: '4px 0 15px rgba(0, 0, 0, 0.1)' },
-            minHeight: { xs: 'auto', md: '100vh' }
+            minHeight: '100vh'
           }}>
             <Container maxWidth="sm">
               <Box sx={{ 
@@ -286,10 +286,11 @@ export default function Home() {
 
           {/* Right side - Image */}
           <Grid item xs={12} md={6} sx={{ 
-            display: { xs: 'block', md: 'block' },
+            display: 'block',
             position: 'relative',
             minHeight: { xs: '100vh', md: '100vh' },
-            overflow: 'hidden'
+            overflow: 'hidden',
+            order: { xs: -1, md: 0 }
           }}>
             <Box
               component="img"
