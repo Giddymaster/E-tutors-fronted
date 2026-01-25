@@ -145,6 +145,11 @@ export default function BecomeTutor() {
   const { countries, loading: countriesLoading } = useCountries()
   const countryOptions = countries.map(c => c.country)
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
   useEffect(() => {
     if (user) {
       const parts = user.name ? user.name.split(' ') : []
@@ -234,6 +239,7 @@ export default function BecomeTutor() {
       const pwRules = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/
       if (!password || !pwRules.test(password)) e.password = 'Password must be 8+ chars with uppercase, lowercase, number, and symbol'
       if (confirmPassword !== password) e.confirmPassword = 'Passwords do not match'
+      if (!profilePhoto) e.profilePhoto = 'Profile photo is required'
       if (!country) e.country = 'Country is required'
       if (!phone) e.phone = 'Phone number is required'
     }
@@ -638,16 +644,19 @@ export default function BecomeTutor() {
                             sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}
                           >
                             Profile Photo
-                            {!profilePhoto && (
-                              <Typography
-                                component="span"
-                                variant="caption"
-                                sx={{ color: '#666', fontWeight: 400, ml: 0.5 }}
-                              >
-                                (Recommended)
-                              </Typography>
-                            )}
+                            <Typography
+                              component="span"
+                              variant="caption"
+                              sx={{ color: 'error.main', fontWeight: 500, ml: 0.5 }}
+                            >
+                              *
+                            </Typography>
                           </Typography>
+                          {errors.profilePhoto && (
+                            <Typography variant="caption" color="error" sx={{ display: 'block', mb: 1 }}>
+                              {errors.profilePhoto}
+                            </Typography>
+                          )}
 
                           {profilePhoto && photoMetadata ? (
                             <Box>
