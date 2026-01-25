@@ -14,7 +14,6 @@ interface Job {
   subject: string
   description: string
   budget: number
-  studentName: string
   createdAt: string
 }
 
@@ -608,7 +607,9 @@ export default function Home() {
                       ${job.budget}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {new Date(job.createdAt).toLocaleDateString()}
+                      {job.createdAt && !isNaN(new Date(job.createdAt).getTime()) 
+                        ? new Date(job.createdAt).toLocaleDateString() 
+                        : 'Recently posted'}
                     </Typography>
                   </Box>
                 </Paper>
