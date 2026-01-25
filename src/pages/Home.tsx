@@ -158,12 +158,9 @@ export default function Home() {
       {/* ✅ Hero Section with Grid layout */}
       <Box sx={{ 
         position: 'relative',
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        minHeight: '100vh'
       }}>
-        {/* Background Image (visible on all screens) */}
+        {/* Mobile Background Image */}
         <Box
           sx={{
             position: 'absolute',
@@ -177,7 +174,7 @@ export default function Home() {
         >
           <Box
             component="img"
-            src="https://images.pexels.com/photos/4145354/pexels-photo-4145354.jpeg"
+            src="https://images.pexels.com/photos/6326370/pexels-photo-6326370.jpeg"
             alt="Woman tutoring young boy"
             sx={{
               width: '100%',
@@ -194,16 +191,16 @@ export default function Home() {
               left: 0,
               width: '100%',
               height: '100%',
-              backgroundColor: 'rgba(0, 0, 0, 0.3)'
+              backgroundColor: 'rgba(0, 0, 0, 0.2)'
             }}
           />
         </Box>
 
         {/* Desktop Layout */}
-        <Grid container sx={{ minHeight: '100vh', display: { xs: 'none', md: 'grid' } }}>
+        <Grid container sx={{ minHeight: '100vh' }}>
           {/* Left side - Content */}
           <Grid item xs={12} md={6} sx={{ 
-            display: 'flex',
+            display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
             p: { xs: 3, md: 6 },
@@ -223,11 +220,9 @@ export default function Home() {
                 <Box 
                   sx={{ 
                     mb: 4,
-                    overflow: 'visible',
+                    overflow: 'hidden',
                     whiteSpace: 'nowrap',
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center'
+                    width: '100%'
                   }}
                 >
                   <Typography
@@ -238,7 +233,8 @@ export default function Home() {
                       letterSpacing: '-0.02em',
                       fontSize: { xs: '2.5rem', md: '3.5rem' },
                       lineHeight: 1.2,
-                      mb: 0,
+                      mb: 2,
+                      display: 'inline-block',
                       animation: 'marquee 30s linear infinite',
                       '@keyframes marquee': {
                         '0%': { transform: 'translateX(100%)' },
@@ -249,7 +245,7 @@ export default function Home() {
                       }
                     }}
                   >
-                    Find The Right Tutor For Your Goals!
+                    Find The Right Tutors
                   </Typography>
                 </Box>
 
@@ -327,6 +323,76 @@ export default function Home() {
             </Container>
           </Grid>
 
+          {/* Desktop Right side - Image */}
+          <Grid item xs={12} md={6} sx={{ 
+            display: { xs: 'none', md: 'block' },
+            position: 'relative',
+            minHeight: '100vh',
+            overflow: 'hidden'
+          }}>
+            <style>{`
+              .carousel-image {
+                display: none;
+              }
+            `}</style>
+            <Box
+              component="img"
+              src="https://images.pexels.com/photos/6326370/pexels-photo-6326370.jpeg"
+              alt="Man discussing via smartphone"
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: '75% center',
+                transformOrigin: 'right center',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                '&:hover': {
+                  filter: 'brightness(1.05)'
+                }
+              }}
+            />
+            <Box
+              component="img"
+              src="https://images.pexels.com/photos/7713994/pexels-photo-7713994.jpeg"
+              alt="Man with sheet music at computer"
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: '75% center',
+                transformOrigin: 'right center',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                '&:hover': {
+                  filter: 'brightness(1.05)'
+                }
+              }}
+            />
+            <Box
+              component="img"
+              src="https://images.istockphoto.com/photo/young-beautiful-woman-in-headphones-working-with-laptop-inside-office-at-workplace-gm1963249822-557964692?utm_source=pexels&utm_medium=affiliate&utm_campaign=sponsored_photo&utm_content=srp_inline_media&utm_term=online%20tutoring"
+              alt="Woman with headphones working at laptop"
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center center',
+                transformOrigin: 'right center',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                clipPath: 'inset(15% 0 15% 0)',
+                '&:hover': {
+                  filter: 'brightness(1.05)'
+                }
+              }}
+            />
+          </Grid>
+        </Grid>
+
         {/* Mobile Content Overlay */}
         <Box
           sx={{
@@ -338,8 +404,8 @@ export default function Home() {
             display: { xs: 'flex', md: 'none' },
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 10,
-            p: 3
+            zIndex: 1,
+            p: { xs: 3, md: 6 }
           }}
         >
           <Container maxWidth="sm">
@@ -352,11 +418,9 @@ export default function Home() {
               <Box 
                 sx={{ 
                   mb: 4,
-                  overflow: 'visible',
+                  overflow: 'hidden',
                   whiteSpace: 'nowrap',
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center'
+                  width: '100%'
                 }}
               >
                 <Typography
@@ -365,9 +429,10 @@ export default function Home() {
                     fontWeight: 900,
                     color: '#13aa05ff',
                     letterSpacing: '-0.02em',
-                    fontSize: '2.5rem',
+                    fontSize: { xs: '2.5rem', md: '3.5rem' },
                     lineHeight: 1.2,
-                    mb: 0,
+                    mb: 2,
+                    display: 'inline-block',
                     animation: 'marquee 30s linear infinite',
                     '@keyframes marquee': {
                       '0%': { transform: 'translateX(100%)' },
@@ -387,11 +452,10 @@ export default function Home() {
                 variant="h6"
                 sx={{
                   mb: 4,
-                  color: '#ffffff',
-                  fontSize: '1.1rem',
+                  color: '#555555',
+                  fontSize: { xs: '1.1rem', md: '1.25rem' },
                   lineHeight: 1.6,
-                  fontWeight: 'normal',
-                  textShadow: '1px 1px 3px rgba(0, 0, 0, 0.5)'
+                  fontWeight: 'normal'
                 }}
               >
                 Personalized lessons, verified tutors, and transparent hourly rates. Get the help you
@@ -403,14 +467,16 @@ export default function Home() {
                 <Paper
                   elevation={3}
                   sx={{
-                    p: 2,
+                    p: { xs: 2, md: 3 },
                     display: 'flex',
-                    flexDirection: 'column',
+                    flexDirection: { xs: 'column', sm: 'row' },
                     gap: 2,
                     alignItems: 'center',
                     width: '100%',
+                    maxWidth: 980,
                     borderRadius: 2,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
                   }}
                 >
                   <TextField
@@ -436,9 +502,9 @@ export default function Home() {
                     size="large"
                     onClick={doSearch}
                     sx={{
-                      px: 4,
+                      px: { xs: 2, sm: 4 },
                       py: 1.5,
-                      width: '100%',
+                      width: { xs: '100%', sm: 'auto' },
                       backgroundColor: '#13aa05ff',
                       color: '#fff',
                       fontWeight: 600,
@@ -454,35 +520,6 @@ export default function Home() {
             </Box>
           </Container>
         </Box>
-
-        {/* Desktop Right side - Image */}
-        <Grid item xs={12} md={6} sx={{ 
-          display: { xs: 'none', md: 'block' },
-          position: 'relative',
-          minHeight: '100vh',
-          overflow: 'hidden'
-        }}>
-          <Box
-            component="img"
-            src="https://images.pexels.com/photos/4145354/pexels-photo-4145354.jpeg"
-            alt="Woman tutoring young boy"
-            sx={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center',
-              transformOrigin: 'right center',
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              transition: 'transform 0.3s ease-in-out',
-              '&:hover': {
-                transform: 'scale(1.05)'
-              }
-            }}
-          />
-        </Grid>
-        </Grid>
       </Box>
 
       {/* ✅ Search results (visible when logged in) */}
