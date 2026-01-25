@@ -24,6 +24,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import AddIcon from '@mui/icons-material/Add'
+import { PaystackButton } from 'react-paystack'
 
 interface WalletBalance {
   balance: number
@@ -51,6 +52,8 @@ export default function Wallet() {
   const [addFundsLoading, setAddFundsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [paystackReady, setPaystackReady] = useState(false)
+  const [paystackReference, setPaystackReference] = useState<string | null>(null)
 
   useEffect(() => {
     if (user?.role !== 'STUDENT') return
@@ -91,19 +94,57 @@ export default function Wallet() {
       setAddFundsLoading(true)
       setError(null)
 
-      // In production, this would redirect to payment processor
-      // For now, we'll show a demo message
-      setSuccess(`$${amount.toFixed(2)} added to wallet! (Demo - integrate payment processor)`)
-      setAddFundsAmount('')
-      setAddFundsDialogOpen(false)
+      // Initiate Paystack payment
+      const response = await api.post('/wallet-payments/initiate', {
+        email: user?.email,
+        amount,
+      })
 
-      // Refresh wallet data
-      setTimeout(() => fetchWalletData(), 1000)
+      if (response.data.success) {
+        setPaystackReference(response.data.reference)
+        setPaystackReady(true)
+      } else {
+        setError('Failed to initiate payment')
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to add funds')
+      console.error('Failed to initiate payment:', err)
+      setError(err.response?.data?.error || 'Failed to initiate payment')
     } finally {
       setAddFundsLoading(false)
     }
+  }
+
+  const handlePaystackSuccess = async (reference: any) => {
+    try {
+      // Verify payment on backend
+      const verifyData = {
+        reference: reference.reference,
+        email: user?.email,
+      }
+
+      const response = await api.post('/wallet-payments/verify', verifyData)
+
+      if (response.data.success) {
+        setSuccess(`Successfully added ${response.data.data.formattedBalance} to your wallet!`)
+        setAddFundsAmount('')
+        setAddFundsDialogOpen(false)
+        setPaystackReady(false)
+        setPaystackReference(null)
+
+        // Refresh wallet data
+        setTimeout(() => fetchWalletData(), 1000)
+      } else {
+        setError('Payment verification failed. Please try again.')
+      }
+    } catch (err: any) {
+      console.error('Payment verification error:', err)
+      setError(err.response?.data?.error || 'Payment verification failed')
+    }
+  }
+
+  const handlePaystackClose = () => {
+    setPaystackReady(false)
+    setError('Payment cancelled')
   }
 
   if (user?.role !== 'STUDENT') {
@@ -205,30 +246,57 @@ export default function Wallet() {
       </Card>
 
       {/* Add Funds Dialog */}
-      <Dialog open={addFundsDialogOpen} onClose={() => setAddFundsDialogOpen(false)}>
+      <Dialog open={addFundsDialogOpen} onClose={() => !paystackReady && setAddFundsDialogOpen(false)}>
         <DialogTitle>Add Funds to Wallet</DialogTitle>
         <DialogContent sx={{ minWidth: 400 }}>
-          <Box sx={{ pt: 2 }}>
-            <TextField
-              fullWidth
-              label="Amount (USD)"
-              type="number"
-              inputProps={{ step: '0.01', min: '1' }}
-              value={addFundsAmount}
-              onChange={(e) => setAddFundsAmount(e.target.value)}
-              placeholder="Enter amount"
-            />
-          </Box>
+          {!paystackReady ? (
+            <Box sx={{ pt: 2 }}>
+              <TextField
+                fullWidth
+                label="Amount (USD)"
+                type="number"
+                inputProps={{ step: '0.01', min: '1' }}
+                value={addFundsAmount}
+                onChange={(e) => setAddFundsAmount(e.target.value)}
+                placeholder="Enter amount"
+              />
+            </Box>
+          ) : (
+            <Box sx={{ pt: 2, textAlign: 'center' }}>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                Amount: ${parseFloat(addFundsAmount).toFixed(2)}
+              </Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                Click the button below to complete payment via Paystack
+              </Typography>
+              {paystackReference && (
+                <PaystackButton
+                  email={user?.email || ''}
+                  amount={Math.round(parseFloat(addFundsAmount) * 100)} // Convert to cents
+                  currency="USD"
+                  publicKey={import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || ''}
+                  text={addFundsLoading ? 'Processing...' : 'Pay Now'}
+                  onSuccess={handlePaystackSuccess}
+                  onClose={handlePaystackClose}
+                  disabled={addFundsLoading}
+                />
+              )}
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddFundsDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleAddFunds}
-            variant="contained"
-            disabled={addFundsLoading || !addFundsAmount}
-          >
-            {addFundsLoading ? <CircularProgress size={24} /> : 'Add Funds'}
+          <Button onClick={() => !paystackReady && setAddFundsDialogOpen(false)} disabled={paystackReady}>
+            Cancel
           </Button>
+          {!paystackReady && (
+            <Button
+              onClick={handleAddFunds}
+              variant="contained"
+              disabled={addFundsLoading || !addFundsAmount}
+            >
+              {addFundsLoading ? <CircularProgress size={24} /> : 'Continue'}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Box>
