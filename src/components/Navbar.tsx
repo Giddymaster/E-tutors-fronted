@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import logo from '../images/logo.png'
+
+const logo = 'https://www.shutterstock.com/image-vector/vector-logo-tutor-educational-courses-260nw-1823498585.jpg'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
