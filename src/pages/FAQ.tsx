@@ -266,7 +266,7 @@ export default function FAQ() {
         </Typography>
         <Typography
           component="a"
-          href="mailto:support@etutors.com"
+          href="mailto:support@mastracktutors.com"
           sx={{
             color: '#1976d2',
             textDecoration: 'none',
