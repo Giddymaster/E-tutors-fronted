@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Box, Typography, Button, Paper, TextField, Stack } from '@mui/material'
+import { Container, Box, Typography, Button, Paper, TextField, Stack, Tabs, Tab } from '@mui/material'
 import { useAuth } from '../context/AuthContext'
 import { Link } from 'react-router-dom'
 import api from '../utils/api'
+import Wallet from '../components/Wallet'
 
 type TutorForm = {
   bio: string
@@ -29,6 +30,7 @@ export default function Profile() {
   const [form, setForm] = useState<TutorForm>({ bio: '', subjects: '', hourlyRate: '', availability: '' })
   const [studentForm, setStudentForm] = useState<StudentForm>({ major: '', year: '', interests: '', preferredSubjects: '', bio: '', timezone: '', phone: '', availability: '' })
   const [message, setMessage] = useState<string | null>(null)
+  const [tab, setTab] = useState<'profile' | 'wallet'>('profile')
 
   useEffect(() => {
     const load = async () => {
@@ -197,24 +199,34 @@ export default function Profile() {
 
             {user.role === 'STUDENT' && (
               <Box sx={{ mt: 3 }}>
-                <Typography variant="h6">Student profile</Typography>
-                <Stack spacing={1} sx={{ mt: 1 }}>
-                  <TextField label="Full name" value={user.name} fullWidth disabled />
-                  <TextField label="Email" value={user.email} fullWidth disabled />
-                  <TextField label="Major" value={studentForm.major} onChange={(e) => setStudentForm((s) => ({ ...s, major: e.target.value }))} fullWidth />
-                  <TextField label="Year (e.g., Sophomore)" value={studentForm.year} onChange={(e) => setStudentForm((s) => ({ ...s, year: e.target.value }))} fullWidth />
-                  <TextField label="Interests (comma separated)" value={studentForm.interests} onChange={(e) => setStudentForm((s) => ({ ...s, interests: e.target.value }))} fullWidth />
-                  <TextField label="Preferred subjects (comma separated)" value={studentForm.preferredSubjects} onChange={(e) => setStudentForm((s) => ({ ...s, preferredSubjects: e.target.value }))} fullWidth />
-                  <TextField label="Phone" value={studentForm.phone} onChange={(e) => setStudentForm((s) => ({ ...s, phone: e.target.value }))} fullWidth />
-                  <TextField label="Timezone" value={studentForm.timezone} onChange={(e) => setStudentForm((s) => ({ ...s, timezone: e.target.value }))} fullWidth />
-                  <TextField label="Availability (e.g., Evenings)" value={studentForm.availability} onChange={(e) => setStudentForm((s) => ({ ...s, availability: e.target.value }))} fullWidth />
-                  <TextField label="Bio / About" value={studentForm.bio} onChange={(e) => setStudentForm((s) => ({ ...s, bio: e.target.value }))} fullWidth multiline rows={4} />
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button variant="contained" onClick={handleSave} disabled={loading}>Save Profile</Button>
-                    <Button component={Link} to="/student" variant="outlined">Home</Button>
-                  </Box>
-                  {message && <Typography color={message.startsWith('Failed') ? 'error' : 'success.main'}>{message}</Typography>}
-                </Stack>
+                <Tabs value={tab} onChange={(e, v: 'profile' | 'wallet') => setTab(v)} sx={{ mb: 2 }}>
+                  <Tab value="profile" label="Profile" />
+                  <Tab value="wallet" label="Wallet" />
+                </Tabs>
+                {tab === 'profile' ? (
+                  <>
+                    <Typography variant="h6">Student profile</Typography>
+                    <Stack spacing={1} sx={{ mt: 1 }}>
+                      <TextField label="Full name" value={user.name} fullWidth disabled />
+                      <TextField label="Email" value={user.email} fullWidth disabled />
+                      <TextField label="Major" value={studentForm.major} onChange={(e) => setStudentForm((s) => ({ ...s, major: e.target.value }))} fullWidth />
+                      <TextField label="Year (e.g., Sophomore)" value={studentForm.year} onChange={(e) => setStudentForm((s) => ({ ...s, year: e.target.value }))} fullWidth />
+                      <TextField label="Interests (comma separated)" value={studentForm.interests} onChange={(e) => setStudentForm((s) => ({ ...s, interests: e.target.value }))} fullWidth />
+                      <TextField label="Preferred subjects (comma separated)" value={studentForm.preferredSubjects} onChange={(e) => setStudentForm((s) => ({ ...s, preferredSubjects: e.target.value }))} fullWidth />
+                      <TextField label="Phone" value={studentForm.phone} onChange={(e) => setStudentForm((s) => ({ ...s, phone: e.target.value }))} fullWidth />
+                      <TextField label="Timezone" value={studentForm.timezone} onChange={(e) => setStudentForm((s) => ({ ...s, timezone: e.target.value }))} fullWidth />
+                      <TextField label="Availability (e.g., Evenings)" value={studentForm.availability} onChange={(e) => setStudentForm((s) => ({ ...s, availability: e.target.value }))} fullWidth />
+                      <TextField label="Bio / About" value={studentForm.bio} onChange={(e) => setStudentForm((s) => ({ ...s, bio: e.target.value }))} fullWidth multiline rows={4} />
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button variant="contained" onClick={handleSave} disabled={loading}>Save Profile</Button>
+                        <Button component={Link} to="/student" variant="outlined">Home</Button>
+                      </Box>
+                      {message && <Typography color={message.startsWith('Failed') ? 'error' : 'success.main'}>{message}</Typography>}
+                    </Stack>
+                  </>
+                ) : (
+                  <Wallet />
+                )}
               </Box>
             )}
           </Box>
