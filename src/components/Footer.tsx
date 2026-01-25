@@ -29,17 +29,11 @@ export default function Footer() {
   }
   const footerLinks = {
     'Company': [
-      { name: 'About Us', path: '/about' },
-      { name: 'Contact Us', path: '/contact' },
-      { name: 'News', path: '/news' },
-      { name: 'Reviews', path: '/reviews' }
+      { name: 'About Us', path: '/about' }
     ],
     'Support': [
       { name: 'FAQ', path: '/faq' },
-      { name: 'Help Center', path: '/help' },
-      { name: 'Security', path: '/security' },
-      { name: 'Terms of Service', path: '/terms' },
-      { name: 'Privacy Policy', path: '/privacy' }
+      { name: 'Terms of Service', path: '/terms' }
     ],
   };
 
