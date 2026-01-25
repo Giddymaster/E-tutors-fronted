@@ -343,13 +343,13 @@ export default function BecomeTutor() {
       const verifyData = {
         reference: reference.reference,
         method: 'Paystack',
-        amount: 3000, // amount in kobo
+        amount: 100, // amount in cents ($1 for testing)
         email,
       }
       
       await api.post('/payments/verify-paystack', verifyData)
       setPaymentCompleted(true)
-      setSuccessMessage(`Payment of $30 via Paystack processed successfully!`)
+      setSuccessMessage(`Payment of $1 via Paystack processed successfully!`)
       setPaymentError(null)
     } catch (err: any) {
       setPaymentError('Payment verification failed. Please contact support.')
@@ -1487,7 +1487,7 @@ export default function BecomeTutor() {
                   💳 Registration Fee
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 2 }}>
-                  A one-time fee of <strong>$30 USD</strong> activates your professional tutor profile:
+                  A one-time fee of <strong>$1 USD</strong> (testing) activates your professional tutor profile:
                 </Typography>
                 <Stack spacing={1} sx={{ pl: 2 }}>
                   <Typography variant="body2">✓ Unlimited student connections</Typography>
@@ -1551,7 +1551,7 @@ export default function BecomeTutor() {
                   {paymentMethod && (
                     <PaystackButton
                       email={email}
-                      amount={3000} // amount in cents (3000 cents = $30)
+                      amount={100} // amount in cents (100 cents = $1 for testing)
                       currency="USD"
                       publicKey={import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || ''}
                       text={processingPayment ? 'Processing...' : 'Pay Now'}
