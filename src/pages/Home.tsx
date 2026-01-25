@@ -156,18 +156,61 @@ export default function Home() {
   return (
     <>
       {/* ✅ Hero Section with Grid layout */}
-      <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-        <Grid container sx={{ minHeight: '100vh' }}>
+      <Box sx={{ 
+        position: 'relative',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        {/* Background Image (visible on all screens) */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 0,
+            display: { xs: 'block', md: 'none' }
+          }}
+        >
+          <Box
+            component="img"
+            src="https://images.pexels.com/photos/4145354/pexels-photo-4145354.jpeg"
+            alt="Woman tutoring young boy"
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center'
+            }}
+          />
+          {/* Dark overlay for better text visibility on mobile */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.3)'
+            }}
+          />
+        </Box>
+
+        {/* Desktop Layout */}
+        <Grid container sx={{ minHeight: '100vh', display: { xs: 'none', md: 'grid' } }}>
           {/* Left side - Content */}
           <Grid item xs={12} md={6} sx={{ 
-            display: { xs: 'none', md: 'flex' },
+            display: 'flex',
             alignItems: 'center', 
             justifyContent: 'center',
             p: { xs: 3, md: 6 },
             backgroundColor: '#f1dbb9ff',
             position: 'relative',
             zIndex: 1,
-            boxShadow: { md: '4px 0 15px rgba(0, 0, 0, 0.1)' },
+            boxShadow: '4px 0 15px rgba(0, 0, 0, 0.1)',
             minHeight: '100vh'
           }}>
             <Container maxWidth="sm">
@@ -284,34 +327,161 @@ export default function Home() {
             </Container>
           </Grid>
 
-          {/* Right side - Image */}
-          <Grid item xs={12} md={6} sx={{ 
-            display: 'block',
-            position: 'relative',
-            minHeight: { xs: '100vh', md: '100vh' },
-            overflow: 'hidden',
-            order: { xs: -1, md: 0 }
-          }}>
-            <Box
-              component="img"
-              src="https://images.pexels.com/photos/4145354/pexels-photo-4145354.jpeg"
-              alt="Woman tutoring young boy"
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center',
-                transformOrigin: 'right center',
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                transition: 'transform 0.3s ease-in-out',
-                '&:hover': {
-                  transform: 'scale(1.05)'
-                }
-              }}
-            />
-          </Grid>
+        {/* Mobile Content Overlay */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            display: { xs: 'flex', md: 'none' },
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            p: 3
+          }}
+        >
+          <Container maxWidth="sm">
+            <Box sx={{ 
+              textAlign: 'center',
+              maxWidth: '500px',
+              mx: 'auto'
+            }}>
+              {/* ✅ Title */}
+              <Box 
+                sx={{ 
+                  mb: 4,
+                  overflow: 'visible',
+                  whiteSpace: 'nowrap',
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <Typography
+                  variant="h2"
+                  sx={{
+                    fontWeight: 900,
+                    color: '#13aa05ff',
+                    letterSpacing: '-0.02em',
+                    fontSize: '2.5rem',
+                    lineHeight: 1.2,
+                    mb: 0,
+                    animation: 'marquee 30s linear infinite',
+                    '@keyframes marquee': {
+                      '0%': { transform: 'translateX(100%)' },
+                      '100%': { transform: 'translateX(-100%)' }
+                    },
+                    '&:hover': {
+                      animationPlayState: 'paused'
+                    }
+                  }}
+                >
+                  Find The Right Tutor For Your Goals!
+                </Typography>
+              </Box>
+
+              {/* ✅ Subtitle */}
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 4,
+                  color: '#ffffff',
+                  fontSize: '1.1rem',
+                  lineHeight: 1.6,
+                  fontWeight: 'normal',
+                  textShadow: '1px 1px 3px rgba(0, 0, 0, 0.5)'
+                }}
+              >
+                Personalized lessons, verified tutors, and transparent hourly rates. Get the help you
+                need — online or in person.
+              </Typography>
+
+              {/* ✅ Search Section */}
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Paper
+                  elevation={3}
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                    alignItems: 'center',
+                    width: '100%',
+                    borderRadius: 2,
+                    backgroundColor: '#ffffff'
+                  }}
+                >
+                  <TextField
+                    placeholder="Subject or skill (e.g. Calculus)"
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value)
+                      if (inputError) setInputError(null)
+                    }}
+                    error={!!inputError}
+                    helperText={inputError || ''}
+                    sx={{ 
+                      flex: 1,
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: '#f8f8f8ff'
+                      }
+                    }}
+                    size="medium"
+                    fullWidth
+                  />
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={doSearch}
+                    sx={{
+                      px: 4,
+                      py: 1.5,
+                      width: '100%',
+                      backgroundColor: '#13aa05ff',
+                      color: '#fff',
+                      fontWeight: 600,
+                      '&:hover': {
+                        backgroundColor: '#118c04',
+                      }
+                    }}
+                  >
+                    Search tutor
+                  </Button>
+                </Paper>
+              </Box>
+            </Box>
+          </Container>
+        </Box>
+
+        {/* Desktop Right side - Image */}
+        <Grid item xs={12} md={6} sx={{ 
+          display: { xs: 'none', md: 'block' },
+          position: 'relative',
+          minHeight: '100vh',
+          overflow: 'hidden'
+        }}>
+          <Box
+            component="img"
+            src="https://images.pexels.com/photos/4145354/pexels-photo-4145354.jpeg"
+            alt="Woman tutoring young boy"
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              transformOrigin: 'right center',
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              transition: 'transform 0.3s ease-in-out',
+              '&:hover': {
+                transform: 'scale(1.05)'
+              }
+            }}
+          />
+        </Grid>
         </Grid>
       </Box>
 
