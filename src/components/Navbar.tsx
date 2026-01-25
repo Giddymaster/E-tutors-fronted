@@ -4,8 +4,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import MenuIcon from '@mui/icons-material/Menu'
 import CloseIcon from '@mui/icons-material/Close'
-
-const logo = '/src/images/logo.png'
+import logoImg from '../images/logo.png'
+const logo = logoImg
 
 export default function Navbar() {
   const { user, logout } = useAuth()
