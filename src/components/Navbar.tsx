@@ -28,9 +28,9 @@ export default function Navbar() {
     <AppBar position="static" sx={{ backgroundColor: '#fffbe6', color: '#222' }}>
       <Toolbar>
         <Box component={Link} to="/" sx={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
-          <Box component="img" src={logo} alt="Excellent Tutors" sx={{ height: 36, width: 'auto' }} />
+          <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: 36, width: 'auto' }} />
           <Typography variant="h6" sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 700 }}>
-            Excellent Tutors
+            MasterTrack tutors
           </Typography>
         </Box>
         {/* center menu (hidden until login/register is clicked). When logged in, keep visible */}

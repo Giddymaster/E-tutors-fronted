@@ -80,7 +80,7 @@ export default function Footer() {
           {/* First column: logo + description */}
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 1 }}>
-              <Box component="img" src={logo} alt="Excellent Tutors" sx={{ height: 164, width: 'auto' }} />
+              <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: 164, width: 'auto' }} />
               <Typography variant="body2" color="text.secondary">
                 We connect students with vetted tutors across subjects. Personalized lessons, flexible scheduling, and progress tracking to help learners succeed.
               </Typography>
@@ -159,7 +159,7 @@ export default function Footer() {
               gap: 2
             }}>
               <Typography variant="body2" color="text.secondary">
-                © {new Date().getFullYear()} Excellent Tutors. All rights reserved.
+                © {new Date().getFullYear()} MasterTrack tutors. All rights reserved.
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Stack direction="row" spacing={2} sx={{ mr: 2 }}>
