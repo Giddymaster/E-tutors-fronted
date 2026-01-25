@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import logo from '../images/logo.png'
+
+const logo = 'https://www.shutterstock.com/image-vector/vector-logo-tutor-educational-courses-260nw-1823498585.jpg'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -28,9 +29,9 @@ export default function Navbar() {
     <AppBar position="static" sx={{ backgroundColor: '#fffbe6', color: '#222' }}>
       <Toolbar>
         <Box component={Link} to="/" sx={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
-          <Box component="img" src={logo} alt="Excellent Tutors" sx={{ height: 36, width: 'auto' }} />
+          <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: 36, width: 'auto', objectFit: 'contain' }} />
           <Typography variant="h6" sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 700 }}>
-            Excellent Tutors
+            MasterTrack tutors
           </Typography>
         </Box>
         {/* center menu (hidden until login/register is clicked). When logged in, keep visible */}

@@ -119,7 +119,7 @@ export default function Register() {
             Sign Up
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" gutterBottom sx={{ mb: 4 }}>
-            Create your Excellent Tutors account
+            Create your MasterTrack tutors account
           </Typography>
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2 }}>
         {error && <Alert severity="error">{error}</Alert>}

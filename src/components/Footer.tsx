@@ -8,7 +8,7 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import logo from '../images/logo.png'
+const logo = 'https://www.shutterstock.com/image-vector/vector-logo-tutor-educational-courses-260nw-1823498585.jpg'
 
 export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState('')
@@ -29,17 +29,11 @@ export default function Footer() {
   }
   const footerLinks = {
     'Company': [
-      { name: 'About Us', path: '/about' },
-      { name: 'Contact Us', path: '/contact' },
-      { name: 'News', path: '/news' },
-      { name: 'Reviews', path: '/reviews' }
+      { name: 'About Us', path: '/about' }
     ],
     'Support': [
       { name: 'FAQ', path: '/faq' },
-      { name: 'Help Center', path: '/help' },
-      { name: 'Security', path: '/security' },
-      { name: 'Terms of Service', path: '/terms' },
-      { name: 'Privacy Policy', path: '/privacy' }
+      { name: 'Terms of Service', path: '/terms' }
     ],
   };
 
@@ -80,7 +74,7 @@ export default function Footer() {
           {/* First column: logo + description */}
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 1 }}>
-              <Box component="img" src={logo} alt="Excellent Tutors" sx={{ height: 164, width: 'auto' }} />
+              <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: 164, width: 'auto', objectFit: 'contain' }} />
               <Typography variant="body2" color="text.secondary">
                 We connect students with vetted tutors across subjects. Personalized lessons, flexible scheduling, and progress tracking to help learners succeed.
               </Typography>
@@ -159,7 +153,7 @@ export default function Footer() {
               gap: 2
             }}>
               <Typography variant="body2" color="text.secondary">
-                © {new Date().getFullYear()} Excellent Tutors. All rights reserved.
+                © {new Date().getFullYear()} MasterTrack tutors. All rights reserved.
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Stack direction="row" spacing={2} sx={{ mr: 2 }}>

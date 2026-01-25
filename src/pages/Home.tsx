@@ -156,7 +156,48 @@ export default function Home() {
   return (
     <>
       {/* ✅ Hero Section with Grid layout */}
-      <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+      <Box sx={{ 
+        position: 'relative',
+        minHeight: '100vh'
+      }}>
+        {/* Mobile Background Image */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 0,
+            display: { xs: 'block', md: 'none' },
+            overflow: 'hidden'
+          }}
+        >
+          <Box
+            component="img"
+            src="https://images.pexels.com/photos/6326370/pexels-photo-6326370.jpeg"
+            alt="Woman tutoring young boy"
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center'
+            }}
+          />
+          {/* Dark overlay for better text visibility on mobile */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.3)'
+            }}
+          />
+        </Box>
+
+        {/* Desktop Layout */}
         <Grid container sx={{ minHeight: '100vh' }}>
           {/* Left side - Content */}
           <Grid item xs={12} md={6} sx={{ 
@@ -167,7 +208,8 @@ export default function Home() {
             backgroundColor: '#f1dbb9ff',
             position: 'relative',
             zIndex: 1,
-            boxShadow: { md: '4px 0 15px rgba(0, 0, 0, 0.1)' }
+            boxShadow: '4px 0 15px rgba(0, 0, 0, 0.1)',
+            minHeight: '100vh'
           }}>
             <Container maxWidth="sm">
               <Box sx={{ 
@@ -204,7 +246,7 @@ export default function Home() {
                       }
                     }}
                   >
-                    Find The Right Tutor For Your Goals!
+                    Find The Right Tutors
                   </Typography>
                 </Box>
 
@@ -282,17 +324,22 @@ export default function Home() {
             </Container>
           </Grid>
 
-          {/* Right side - Image */}
+          {/* Desktop Right side - Image */}
           <Grid item xs={12} md={6} sx={{ 
             display: { xs: 'none', md: 'block' },
             position: 'relative',
             minHeight: '100vh',
             overflow: 'hidden'
           }}>
+            <style>{`
+              .carousel-image {
+                display: none;
+              }
+            `}</style>
             <Box
               component="img"
-              src="https://images.pexels.com/photos/3771074/pexels-photo-3771074.jpeg"
-              alt="Strict female teacher at blackboard"
+              src="https://images.pexels.com/photos/6326370/pexels-photo-6326370.jpeg"
+              alt="Man discussing via smartphone"
               sx={{
                 width: '100%',
                 height: '100%',
@@ -302,14 +349,174 @@ export default function Home() {
                 position: 'absolute',
                 top: 0,
                 right: 0,
-                transition: 'transform 0.3s ease-in-out',
                 '&:hover': {
-                  transform: 'scale(1.05)'
+                  filter: 'brightness(1.05)'
+                }
+              }}
+            />
+            <Box
+              component="img"
+              src="https://images.pexels.com/photos/7713994/pexels-photo-7713994.jpeg"
+              alt="Man with sheet music at computer"
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: '75% center',
+                transformOrigin: 'right center',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                '&:hover': {
+                  filter: 'brightness(1.05)'
+                }
+              }}
+            />
+            <Box
+              component="img"
+              src="https://images.istockphoto.com/photo/young-beautiful-woman-in-headphones-working-with-laptop-inside-office-at-workplace-gm1963249822-557964692?utm_source=pexels&utm_medium=affiliate&utm_campaign=sponsored_photo&utm_content=srp_inline_media&utm_term=online%20tutoring"
+              alt="Woman with headphones working at laptop"
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center center',
+                transformOrigin: 'right center',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                clipPath: 'inset(15% 0 15% 0)',
+                '&:hover': {
+                  filter: 'brightness(1.05)'
                 }
               }}
             />
           </Grid>
         </Grid>
+
+        {/* Mobile Content Overlay */}
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            minHeight: '100vh',
+            display: { xs: 'flex', md: 'none' },
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2,
+            p: { xs: 3, md: 6 }
+          }}
+        >
+          <Container maxWidth="sm">
+            <Box sx={{ 
+              textAlign: 'center',
+              maxWidth: '500px',
+              mx: 'auto'
+            }}>
+              {/* ✅ Title */}
+              <Box 
+                sx={{ 
+                  mb: 4,
+                  overflow: 'visible',
+                  width: '100%'
+                }}
+              >
+                <Typography
+                  variant="h2"
+                  sx={{
+                    fontWeight: 900,
+                    color: '#13aa05ff',
+                    letterSpacing: '-0.02em',
+                    fontSize: { xs: '2.5rem', md: '3.5rem' },
+                    lineHeight: 1.2,
+                    mb: 2,
+                    animation: 'marquee 30s linear infinite',
+                    '@keyframes marquee': {
+                      '0%': { transform: 'translateX(0)' },
+                      '100%': { transform: 'translateX(0)' }
+                    },
+                    '&:hover': {
+                      animationPlayState: 'paused'
+                    }
+                  }}
+                >
+                  Find The Right Tutors
+                </Typography>
+              </Box>
+
+              {/* ✅ Subtitle */}
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 4,
+                  color: '#555555',
+                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                  lineHeight: 1.6,
+                  fontWeight: 'normal'
+                }}
+              >
+                Personalized lessons, verified tutors, and transparent hourly rates. Get the help you
+                need — online or in person.
+              </Typography>
+
+              {/* ✅ Search Section */}
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Paper
+                  elevation={3}
+                  sx={{
+                    p: { xs: 2, md: 3 },
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: 2,
+                    alignItems: 'center',
+                    width: '100%',
+                    maxWidth: 980,
+                    borderRadius: 2,
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  <TextField
+                    placeholder="Subject or skill (e.g. Calculus)"
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value)
+                      if (inputError) setInputError(null)
+                    }}
+                    error={!!inputError}
+                    helperText={inputError || ''}
+                    sx={{ 
+                      flex: 1,
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: '#f8f8f8ff'
+                      }
+                    }}
+                    size="medium"
+                    fullWidth
+                  />
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={doSearch}
+                    sx={{
+                      px: { xs: 2, sm: 4 },
+                      py: 1.5,
+                      width: { xs: '100%', sm: 'auto' },
+                      backgroundColor: '#13aa05ff',
+                      color: '#fff',
+                      fontWeight: 600,
+                      '&:hover': {
+                        backgroundColor: '#118c04',
+                      }
+                    }}
+                  >
+                    Search tutor
+                  </Button>
+                </Paper>
+              </Box>
+            </Box>
+          </Container>
+        </Box>
       </Box>
 
       {/* ✅ Search results (visible when logged in) */}
