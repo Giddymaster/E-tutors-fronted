@@ -307,6 +307,7 @@ export default function Home() {
                 sx={{
                   px: { xs: 2, sm: 4 },
                   py: 1.5,
+                  minHeight: 44,
                   width: { xs: '100%', sm: 'auto' },
                   backgroundColor: '#13aa05ff',
                   color: '#fff',
@@ -501,6 +502,7 @@ export default function Home() {
                     sx={{
                       px: { xs: 2, sm: 4 },
                       py: 1.5,
+                      minHeight: 44,
                       width: { xs: '100%', sm: 'auto' },
                       backgroundColor: '#13aa05ff',
                       color: '#fff',
@@ -620,6 +622,7 @@ export default function Home() {
             variant="contained"
             color="success"
             size="large"
+            sx={{ minHeight: 44 }}
             onClick={() => {
               if (user && user.role === 'TUTOR') {
                 navigate('/available-jobs')

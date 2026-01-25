@@ -99,6 +99,7 @@ export default function Login() {
               variant="outlined"
               startIcon={<FcGoogle />}
               onClick={() => (window.location.href = `${API_BASE}/auth/google`)}
+              sx={{ minHeight: 44 }}
             >
               Log in with Google
             </Button>
@@ -106,6 +107,7 @@ export default function Login() {
               variant="outlined"
               startIcon={<AppleIcon />}
               onClick={() => alert('Apple OAuth not configured')}
+              sx={{ minHeight: 44 }}
             >
               Log in with Apple
             </Button>
@@ -155,10 +157,10 @@ export default function Login() {
                 alignItems: 'center',
               }}
             >
-              <Button variant="contained" onClick={submit}>
+              <Button variant="contained" onClick={submit} sx={{ minHeight: 44, minWidth: 100 }}>
                 Log in
               </Button>
-              <Button variant="text">Forgot username or password?</Button>
+              <Button variant="text" sx={{ minHeight: 44 }}>Forgot username or password?</Button>
             </Box>
           </Box>
 

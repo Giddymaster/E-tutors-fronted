@@ -202,7 +202,7 @@ export default function Register() {
             {password ? passwordStrengthLabel(passwordStrength(password)) : 'Very weak'}
           </Typography>
         </Box>
-        <Button variant="contained" type="submit" fullWidth disabled={loading} startIcon={loading ? <CircularProgress color="inherit" size={18} /> : null}>
+        <Button variant="contained" type="submit" fullWidth disabled={loading} sx={{ minHeight: 44 }} startIcon={loading ? <CircularProgress color="inherit" size={18} /> : null}>
           {loading ? 'Creating account...' : 'Sign Up'}
         </Button>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -214,6 +214,7 @@ export default function Register() {
           variant="outlined"
           fullWidth
           startIcon={<FcGoogle />}
+          sx={{ minHeight: 44 }}
           onClick={() => (window.location.href = `${(import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'}/auth/google`)}
         >
           Sign up with Gmail
@@ -222,6 +223,7 @@ export default function Register() {
           variant="outlined"
           fullWidth
           startIcon={<AppleIcon />}
+          sx={{ minHeight: 44 }}
           onClick={() => alert('Apple OAuth not configured')}
         >
           Sign up with Apple
