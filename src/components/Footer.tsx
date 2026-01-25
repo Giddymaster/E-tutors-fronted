@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext'
-import { Box, Container, Grid, Typography, Button, Stack, TextField } from '@mui/material';
+import { Box, Container, Grid, Typography, Button, Stack, TextField, CircularProgress } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import AppleIcon from '@mui/icons-material/Apple';
 import AndroidIcon from '@mui/icons-material/Android';
@@ -8,24 +8,46 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import api from '../utils/api';
+
 const logo = '/src/images/logo.png'
 
 export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterMessage, setNewsletterMessage] = useState<string | null>(null)
+  const [newsletterLoading, setNewsletterLoading] = useState(false)
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success')
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
     setNewsletterMessage(null)
     const email = newsletterEmail.trim()
+    
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setMessageType('error')
       setNewsletterMessage('Please enter a valid email address')
       return
     }
-    // Minimal local feedback. In future, call backend API to persist subscription.
-    setNewsletterMessage('Thanks for subscribing!')
-    setNewsletterEmail('')
-    setTimeout(() => setNewsletterMessage(null), 4000)
+
+    try {
+      setNewsletterLoading(true)
+      const response = await api.post('/newsletter/subscribe', { email })
+      
+      if (response.data.success) {
+        setMessageType('success')
+        setNewsletterMessage(response.data.message || 'Check your email for confirmation link!')
+        setNewsletterEmail('')
+      } else {
+        setMessageType('error')
+        setNewsletterMessage(response.data.message || 'Subscription failed')
+      }
+    } catch (error: any) {
+      setMessageType('error')
+      setNewsletterMessage(error.response?.data?.error || 'Failed to subscribe. Please try again.')
+    } finally {
+      setNewsletterLoading(false)
+      setTimeout(() => setNewsletterMessage(null), 5000)
+    }
   }
   const footerLinks = {
     'Company': [
@@ -117,12 +139,24 @@ export default function Footer() {
                 placeholder="Your email"
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
+                disabled={newsletterLoading}
                 sx={{ flex: 1 }}
               />
-              <Button type="submit" variant="contained" size="small">Subscribe</Button>
+              <Button 
+                type="submit" 
+                variant="contained" 
+                size="small"
+                disabled={newsletterLoading}
+              >
+                {newsletterLoading ? <CircularProgress size={20} /> : 'Subscribe'}
+              </Button>
             </Box>
             {newsletterMessage && (
-              <Typography variant="body2" color={newsletterMessage.startsWith('Thanks') ? 'success.main' : 'error'} sx={{ mt: 1 }}>
+              <Typography 
+                variant="body2" 
+                color={messageType === 'success' ? 'success.main' : 'error'} 
+                sx={{ mt: 1 }}
+              >
                 {newsletterMessage}
               </Typography>
             )}
