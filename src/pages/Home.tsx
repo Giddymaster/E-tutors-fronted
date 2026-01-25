@@ -421,7 +421,7 @@ export default function Home() {
               variant="h2"
               sx={{
                 fontWeight: 900,
-                color: '#13aa05ff',
+                color: { xs: '#ffffff', sm: '#13aa05ff' },
                 letterSpacing: '-0.02em',
                 fontSize: { xs: '2rem', sm: '2.5rem' },
                 lineHeight: 1.2,

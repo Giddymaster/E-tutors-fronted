@@ -50,7 +50,7 @@ export default function Navbar() {
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         {/* Logo & Brand (left) */}
         <Box component={Link} to="/" sx={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 1, minWidth: 'fit-content' }}>
-          <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: { xs: 32, md: 70 }, width: 'auto', objectFit: 'contain' }} />
+          <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: { xs: 50, md: 70 }, width: { xs: 50, md: 'auto' }, objectFit: 'contain' }} />
           <Typography variant="h6" sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 700, display: { xs: 'none', sm: 'block' } }}>
             MasterTrack Tutors
           </Typography>
