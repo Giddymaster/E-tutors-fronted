@@ -29,7 +29,7 @@ export default function Navbar() {
     <AppBar position="static" sx={{ backgroundColor: '#fffbe6', color: '#222' }}>
       <Toolbar>
         <Box component={Link} to="/" sx={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
-          <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: 36, width: 'auto' }} />
+          <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: 36, width: 'auto', objectFit: 'contain' }} />
           <Typography variant="h6" sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 700 }}>
             MasterTrack tutors
           </Typography>

@@ -74,7 +74,7 @@ export default function Footer() {
           {/* First column: logo + description */}
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 1 }}>
-              <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: 164, width: 'auto' }} />
+              <Box component="img" src={logo} alt="MasterTrack tutors" sx={{ height: 164, width: 'auto', objectFit: 'contain' }} />
               <Typography variant="body2" color="text.secondary">
                 We connect students with vetted tutors across subjects. Personalized lessons, flexible scheduling, and progress tracking to help learners succeed.
               </Typography>
