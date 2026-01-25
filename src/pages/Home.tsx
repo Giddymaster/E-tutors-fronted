@@ -174,8 +174,8 @@ export default function Home() {
         >
           <Box
             component="img"
-            src="https://images.pexels.com/photos/6326370/pexels-photo-6326370.jpeg"
-            alt="Woman tutoring young boy"
+            src="https://images.pexels.com/photos/18789916/pexels-photo-18789916.png"
+            alt="Teacher with books helping student"
             sx={{
               width: '100%',
               height: '100%',
