@@ -8,7 +8,7 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-const logo = 'https://www.shutterstock.com/image-vector/vector-logo-tutor-educational-courses-260nw-1823498585.jpg'
+const logo = '/src/images/logo.png'
 
 export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState('')

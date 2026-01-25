@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import MenuIcon from '@mui/icons-material/Menu'
 import CloseIcon from '@mui/icons-material/Close'
 
-const logo = 'https://www.shutterstock.com/image-vector/vector-logo-tutor-educational-courses-260nw-1823498585.jpg'
+const logo = '/src/images/logo.png'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
