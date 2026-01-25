@@ -81,7 +81,7 @@ export default function AITutor() {
   useEffect(() => {
     loadCredits()
     loadSessions()
-  }, [])
+  }, [user])  // Added dependency on user to trigger reload when authenticated
 
   useEffect(() => {
     scrollToBottom()
@@ -192,6 +192,17 @@ export default function AITutor() {
       e.preventDefault()
       sendMessage()
     }
+  }
+
+  // Guard: Show loading until user is determined
+  if (!user) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    )
   }
 
   return (
@@ -365,7 +376,13 @@ export default function AITutor() {
       )}
 
       {/* New Session Dialog */}
-      <Dialog open={newSessionDialog} onClose={() => setNewSessionDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={newSessionDialog} 
+        onClose={() => setNewSessionDialog(false)} 
+        maxWidth="sm" 
+        fullWidth
+        disableEnforceFocus
+      >
         <DialogTitle>Start New AI Tutoring Session</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -402,7 +419,13 @@ export default function AITutor() {
       </Dialog>
 
       {/* History Dialog */}
-      <Dialog open={historyDialog} onClose={() => setHistoryDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={historyDialog} 
+        onClose={() => setHistoryDialog(false)} 
+        maxWidth="sm" 
+        fullWidth
+        disableEnforceFocus
+      >
         <DialogTitle>Session History</DialogTitle>
         <DialogContent>
           {sessions.length === 0 ? (
