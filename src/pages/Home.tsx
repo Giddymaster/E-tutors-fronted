@@ -197,31 +197,31 @@ export default function Home() {
         </Box>
 
         {/* Desktop Layout */}
-        <Grid container sx={{ minHeight: '100vh' }}>
+        <Grid container sx={{ minHeight: '100vh', display: { xs: 'none', md: 'flex' } }}>
           {/* Left side - Content */}
-          <Grid item xs={12} md={6} sx={{ 
+          <Grid item md={6} sx={{ 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
-            p: { xs: 3, md: 6 },
+            p: { xs: 2, md: 1 },
             backgroundColor: '#f1dbb9ff',
             position: 'relative',
             zIndex: 1,
             boxShadow: '4px 0 15px rgba(0, 0, 0, 0.1)',
             minHeight: '100vh'
           }}>
-            <Container maxWidth="sm">
-              <Box sx={{ 
-                textAlign: { xs: 'center', md: 'left' },
-                maxWidth: '500px',
-                mx: 'auto'
-              }}>
+            <Box sx={{ 
+              textAlign: { xs: 'center', md: 'left' },
+              maxWidth: { xs: '100%', md: '550px' },
+              width: '100%',
+              px: { xs: 0, md: 1 }
+            }}>
                 {/* ✅ Title */}
                 <Box 
                   sx={{ 
                     mb: 4,
                     overflow: 'hidden',
-                    whiteSpace: 'nowrap',
+                    position: 'relative',
                     width: '100%'
                   }}
                 >
@@ -235,17 +235,18 @@ export default function Home() {
                       lineHeight: 1.2,
                       mb: 2,
                       display: 'inline-block',
-                      animation: 'marquee 30s linear infinite',
+                      whiteSpace: 'nowrap',
+                      animation: 'marquee 15s linear infinite',
                       '@keyframes marquee': {
-                        '0%': { transform: 'translateX(100%)' },
-                        '100%': { transform: 'translateX(-100%)' }
+                        '0%': { transform: 'translateX(0%)' },
+                        '100%': { transform: 'translateX(-50%)' }
                       },
                       '&:hover': {
                         animationPlayState: 'paused'
                       }
                     }}
                   >
-                    Find The Right Tutors
+                    Find The Right Tutors • Find The Right Tutors • 
                   </Typography>
                 </Box>
 
@@ -320,13 +321,12 @@ export default function Home() {
               </Button>
             </Paper>
           </Box>
-              </Box>
-            </Container>
+            </Box>
           </Grid>
 
           {/* Desktop Right side - Image */}
-          <Grid item xs={12} md={6} sx={{ 
-            display: { xs: 'none', md: 'block' },
+          <Grid item md={6} sx={{ 
+            display: 'block',
             position: 'relative',
             minHeight: '100vh',
             overflow: 'hidden'
@@ -401,122 +401,122 @@ export default function Home() {
             width: '100%',
             minHeight: '100vh',
             display: { xs: 'flex', md: 'none' },
-            alignItems: 'center',
-            justifyContent: 'center',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
             zIndex: 2,
-            p: { xs: 3, md: 6 }
+            p: { xs: 2 },
+            pt: { xs: 8 },
+            pb: { xs: 4 }
           }}
         >
-          <Container maxWidth="sm">
-            <Box sx={{ 
-              textAlign: 'center',
-              maxWidth: '500px',
-              mx: 'auto'
-            }}>
-              {/* ✅ Title */}
-              <Box 
+          {/* Marquee at top */}
+          <Box 
+            sx={{ 
+              overflow: 'hidden',
+              position: 'relative',
+              width: '100%'
+            }}
+          >
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 900,
+                color: '#13aa05ff',
+                letterSpacing: '-0.02em',
+                fontSize: { xs: '2rem', sm: '2.5rem' },
+                lineHeight: 1.2,
+                display: 'inline-block',
+                whiteSpace: 'nowrap',
+                animation: 'marquee 15s linear infinite',
+                '@keyframes marquee': {
+                  '0%': { transform: 'translateX(0%)' },
+                  '100%': { transform: 'translateX(-50%)' }
+                },
+                '&:hover': {
+                  animationPlayState: 'paused'
+                }
+              }}
+            >
+              Find The Right Tutors • Find The Right Tutors • 
+            </Typography>
+          </Box>
+
+          {/* Centered text */}
+          <Box sx={{ 
+            textAlign: 'center',
+            px: 2,
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: '#ffffff',
+                fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                lineHeight: 1.6,
+                fontWeight: 500,
+                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+              }}
+            >
+              Personalized lessons, verified tutors, and transparent hourly rates. Get the help you
+              need — online or in person.
+            </Typography>
+          </Box>
+
+          {/* Search box at bottom */}
+          <Box sx={{ width: '100%', px: 1 }}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+                borderRadius: 2,
+                backgroundColor: '#ffffff',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <TextField
+                placeholder="Subject or skill (e.g. Calculus)"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  if (inputError) setInputError(null)
+                }}
+                error={!!inputError}
+                helperText={inputError || ''}
                 sx={{ 
-                  mb: 4,
-                  overflow: 'visible',
-                  width: '100%'
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#f8f8f8ff'
+                  }
                 }}
-              >
-                <Typography
-                  variant="h2"
-                  sx={{
-                    fontWeight: 900,
-                    color: '#13aa05ff',
-                    letterSpacing: '-0.02em',
-                    fontSize: { xs: '2.5rem', md: '3.5rem' },
-                    lineHeight: 1.2,
-                    mb: 2,
-                    animation: 'marquee 30s linear infinite',
-                    '@keyframes marquee': {
-                      '0%': { transform: 'translateX(0)' },
-                      '100%': { transform: 'translateX(0)' }
-                    },
-                    '&:hover': {
-                      animationPlayState: 'paused'
-                    }
-                  }}
-                >
-                  Find The Right Tutors
-                </Typography>
-              </Box>
-
-              {/* ✅ Subtitle */}
-              <Typography
-                variant="h6"
+                size="medium"
+                fullWidth
+              />
+              <Button
+                variant="contained"
+                size="large"
+                onClick={doSearch}
                 sx={{
-                  mb: 4,
-                  color: '#555555',
-                  fontSize: { xs: '1.1rem', md: '1.25rem' },
-                  lineHeight: 1.6,
-                  fontWeight: 'normal'
+                  px: 2,
+                  py: 1.5,
+                  minHeight: 44,
+                  width: '100%',
+                  backgroundColor: '#13aa05ff',
+                  color: '#fff',
+                  fontWeight: 600,
+                  '&:hover': {
+                    backgroundColor: '#118c04',
+                  }
                 }}
               >
-                Personalized lessons, verified tutors, and transparent hourly rates. Get the help you
-                need — online or in person.
-              </Typography>
-
-              {/* ✅ Search Section */}
-              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Paper
-                  elevation={3}
-                  sx={{
-                    p: { xs: 2, md: 3 },
-                    display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    gap: 2,
-                    alignItems: 'center',
-                    width: '100%',
-                    maxWidth: 980,
-                    borderRadius: 2,
-                    backgroundColor: '#ffffff',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-                  }}
-                >
-                  <TextField
-                    placeholder="Subject or skill (e.g. Calculus)"
-                    value={query}
-                    onChange={(e) => {
-                      setQuery(e.target.value)
-                      if (inputError) setInputError(null)
-                    }}
-                    error={!!inputError}
-                    helperText={inputError || ''}
-                    sx={{ 
-                      flex: 1,
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: '#f8f8f8ff'
-                      }
-                    }}
-                    size="medium"
-                    fullWidth
-                  />
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={doSearch}
-                    sx={{
-                      px: { xs: 2, sm: 4 },
-                      py: 1.5,
-                      minHeight: 44,
-                      width: { xs: '100%', sm: 'auto' },
-                      backgroundColor: '#13aa05ff',
-                      color: '#fff',
-                      fontWeight: 600,
-                      '&:hover': {
-                        backgroundColor: '#118c04',
-                      }
-                    }}
-                  >
-                    Search tutor
-                  </Button>
-                </Paper>
-              </Box>
-            </Box>
-          </Container>
+                Search tutor
+              </Button>
+            </Paper>
+          </Box>
         </Box>
       </Box>
 
