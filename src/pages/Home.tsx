@@ -46,15 +46,15 @@ export default function Home() {
         const res = await api.get('/assignments')
         const availableJobs = (res.data.assignments || [])
           .filter((a: any) => !a.acceptedBidId)
-          .slice(0, 3) // Show only first 3 jobs on home page
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // Sort by most recent
+          .slice(0, 3) // Show only 3 most recent jobs
           .map((a: any) => ({
             id: a.id,
             title: a.title,
             subject: a.subject,
             description: a.description,
             budget: a.budget,
-            studentName: a.createdBy || 'Anonymous',
-            createdAt: new Date().toISOString(),
+            createdAt: a.createdAt,
           }))
         setJobs(availableJobs)
       } catch {
@@ -64,6 +64,7 @@ export default function Home() {
           const assignments = JSON.parse(stored)
           const availableJobs = assignments
             .filter((a: any) => !a.acceptedBidId)
+            .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // Sort by most recent
             .slice(0, 3)
             .map((a: any) => ({
               id: a.id,
@@ -71,8 +72,7 @@ export default function Home() {
               subject: a.subject,
               description: a.description,
               budget: a.budget,
-              studentName: a.createdBy || 'Anonymous',
-              createdAt: new Date().toISOString(),
+              createdAt: a.createdAt,
             }))
           setJobs(availableJobs)
         }
@@ -603,12 +603,12 @@ export default function Home() {
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flex: 1 }}>
                     {job.description.length > 80 ? `${job.description.substring(0, 80)}...` : job.description}
                   </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
                     <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
                       ${job.budget}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {job.studentName}
+                      {new Date(job.createdAt).toLocaleDateString()}
                     </Typography>
                   </Box>
                 </Paper>
