@@ -169,7 +169,8 @@ export default function Home() {
             width: '100%',
             height: '100%',
             zIndex: 0,
-            display: { xs: 'block', md: 'none' }
+            display: { xs: 'block', md: 'none' },
+            overflow: 'hidden'
           }}
         >
           <Box
@@ -191,7 +192,7 @@ export default function Home() {
               left: 0,
               width: '100%',
               height: '100%',
-              backgroundColor: 'rgba(0, 0, 0, 0.2)'
+              backgroundColor: 'rgba(0, 0, 0, 0.3)'
             }}
           />
         </Box>
@@ -396,15 +397,13 @@ export default function Home() {
         {/* Mobile Content Overlay */}
         <Box
           sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
+            position: 'relative',
             width: '100%',
-            height: '100%',
+            minHeight: '100vh',
             display: { xs: 'flex', md: 'none' },
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 1,
+            zIndex: 2,
             p: { xs: 3, md: 6 }
           }}
         >
@@ -418,8 +417,7 @@ export default function Home() {
               <Box 
                 sx={{ 
                   mb: 4,
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
+                  overflow: 'visible',
                   width: '100%'
                 }}
               >
@@ -432,18 +430,17 @@ export default function Home() {
                     fontSize: { xs: '2.5rem', md: '3.5rem' },
                     lineHeight: 1.2,
                     mb: 2,
-                    display: 'inline-block',
                     animation: 'marquee 30s linear infinite',
                     '@keyframes marquee': {
-                      '0%': { transform: 'translateX(100%)' },
-                      '100%': { transform: 'translateX(-100%)' }
+                      '0%': { transform: 'translateX(0)' },
+                      '100%': { transform: 'translateX(0)' }
                     },
                     '&:hover': {
                       animationPlayState: 'paused'
                     }
                   }}
                 >
-                  Find The Right Tutor For Your Goals!
+                  Find The Right Tutors
                 </Typography>
               </Box>
 
