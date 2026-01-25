@@ -179,9 +179,11 @@ export default function Home() {
                 <Box 
                   sx={{ 
                     mb: 4,
-                    overflow: 'hidden',
+                    overflow: 'visible',
                     whiteSpace: 'nowrap',
-                    width: '100%'
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center'
                   }}
                 >
                   <Typography
@@ -192,8 +194,7 @@ export default function Home() {
                       letterSpacing: '-0.02em',
                       fontSize: { xs: '2.5rem', md: '3.5rem' },
                       lineHeight: 1.2,
-                      mb: 2,
-                      display: 'inline-block',
+                      mb: 0,
                       animation: 'marquee 30s linear infinite',
                       '@keyframes marquee': {
                         '0%': { transform: 'translateX(100%)' },
@@ -291,13 +292,13 @@ export default function Home() {
           }}>
             <Box
               component="img"
-              src="https://images.pexels.com/photos/3771074/pexels-photo-3771074.jpeg"
-              alt="Strict female teacher at blackboard"
+              src="https://images.pexels.com/photos/4145354/pexels-photo-4145354.jpeg"
+              alt="Woman tutoring young boy"
               sx={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                objectPosition: '75% center',
+                objectPosition: 'center',
                 transformOrigin: 'right center',
                 position: 'absolute',
                 top: 0,
