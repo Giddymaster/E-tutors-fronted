@@ -257,7 +257,13 @@ export default function BecomeTutor() {
 
     if (step === 3) {
       if (!certify) e.certify = 'You must certify that information is accurate'
-      if (country === 'United States' && !ssn) e.ssn = 'SSN is required for US residents'
+      if (country === 'United States') {
+        if (!ssn) {
+          e.ssn = 'SSN is required for US residents'
+        } else if (!/^\d{9}$/.test(ssn)) {
+          e.ssn = 'SSN must be exactly 9 digits'
+        }
+      }
     }
 
     if (step === 4) {
@@ -1426,11 +1432,19 @@ export default function BecomeTutor() {
                     <TextField
                       label="Social Security Number (SSN)"
                       value={ssn}
-                      onChange={(e) => setSsn(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 9)
+                        setSsn(value)
+                      }}
                       fullWidth
                       error={!!errors.ssn}
-                      helperText={errors.ssn || 'Required for US tax compliance (encrypted & secure)'}
+                      helperText={errors.ssn || 'Must be exactly 9 digits (e.g., 123456789)'}
                       type="password"
+                      inputProps={{
+                        maxLength: 9,
+                        inputMode: 'numeric',
+                        pattern: '[0-9]*'
+                      }}
                     />
                   </Grid>
                 )}
