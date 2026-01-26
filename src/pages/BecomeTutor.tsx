@@ -169,6 +169,15 @@ export default function BecomeTutor() {
     }
   }, [])
 
+  // Restore payment completion state if user already paid
+  useEffect(() => {
+    const paid = localStorage.getItem('tutorPaymentCompleted')
+    if (paid === 'true') {
+      setPaymentCompleted(true)
+      setPaymentError(null)
+    }
+  }, [])
+
   // Update available cities when country changes
   useEffect(() => {
     if (country) {
@@ -382,6 +391,7 @@ export default function BecomeTutor() {
       
       await api.post('/payments/verify-paystack', verifyData)
       setPaymentCompleted(true)
+      localStorage.setItem('tutorPaymentCompleted', 'true')
       setSuccessMessage(`Payment of $1 USD via Paystack processed successfully!`)
       setPaymentError(null)
     } catch (err: any) {
