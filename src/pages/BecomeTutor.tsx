@@ -339,17 +339,18 @@ export default function BecomeTutor() {
 
   const handlePaystackSuccess = async (reference: any) => {
     try {
+      console.log('Paystack payment successful:', reference)
       // Verify payment on backend
       const verifyData = {
         reference: reference.reference,
         method: 'Paystack',
-        amount: 100, // amount in cents ($1 for testing)
+        amount: 100, // amount in cents (100 cents = $1 USD)
         email,
       }
       
       await api.post('/payments/verify-paystack', verifyData)
       setPaymentCompleted(true)
-      setSuccessMessage(`Payment of $1 via Paystack processed successfully!`)
+      setSuccessMessage(`Payment of $1 USD via Paystack processed successfully!`)
       setPaymentError(null)
     } catch (err: any) {
       setPaymentError('Payment verification failed. Please contact support.')
@@ -360,6 +361,7 @@ export default function BecomeTutor() {
   }
 
   const handlePaystackClose = () => {
+    console.log('Paystack payment closed')
     setProcessingPayment(false)
     setPaymentError('Payment cancelled')
   }
@@ -1548,17 +1550,40 @@ export default function BecomeTutor() {
                     </Alert>
                   )}
 
-                  {paymentMethod && (
+                  {!email && (
+                    <Alert severity="warning" sx={{ mb: 2 }}>
+                      Please enter your email in Step 1 to enable payment.
+                    </Alert>
+                  )}
+
+                  {!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                      Paystack is not configured. Please contact support.
+                    </Alert>
+                  )}
+
+                  {paymentMethod && email && import.meta.env.VITE_PAYSTACK_PUBLIC_KEY && (
                     <PaystackButton
-                      email={email}
-                      amount={100} // amount in cents (100 cents = $1 for testing)
-                      currency="USD"
-                      publicKey={import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || ''}
-                      text={processingPayment ? 'Processing...' : 'Pay Now'}
-                      onSuccess={handlePaystackSuccess}
-                      onClose={handlePaystackClose}
+                      {...{
+                        email: email,
+                        amount: 100, // amount in cents (100 cents = $1 USD)
+                        currency: 'USD',
+                        publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
+                        text: processingPayment ? 'Processing...' : 'Pay Now',
+                        onSuccess: handlePaystackSuccess,
+                        onClose: handlePaystackClose,
+                        metadata: {
+                          custom_fields: [
+                            {
+                              display_name: 'Tutor Registration',
+                              variable_name: 'tutor_registration',
+                              value: `${firstName} ${lastName}`,
+                            },
+                          ],
+                        },
+                      }}
                       className="paystack-button"
-                      disabled={processingPayment}
+                      disabled={processingPayment || !email}
                     />
                   )}
                 </Box>
