@@ -281,6 +281,32 @@ export default function BecomeTutor() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleSaveAndExit = () => {
+    // Save current progress to localStorage
+    const formData = {
+      firstName,
+      lastName,
+      email,
+      country,
+      city,
+      phone,
+      dob,
+      gender,
+      professionalHeadline,
+      specialization,
+      educationLevel,
+      shortBio,
+      hourlyRate,
+      weeklyHours,
+      activeStep,
+      completedSteps: Array.from(completedSteps),
+    }
+    localStorage.setItem('tutorRegistrationDraft', JSON.stringify(formData))
+    
+    // Navigate to home or dashboard
+    navigate('/')
+  }
+
   const handleStepClick = (step: number) => {
     if (step < activeStep || completedSteps.has(step)) {
       setActiveStep(step)
@@ -1731,6 +1757,7 @@ export default function BecomeTutor() {
                 <Stack direction="row" spacing={2}>
                   <Button
                     variant="text"
+                    onClick={handleSaveAndExit}
                     startIcon={<SaveIcon />}
                     sx={{ display: { xs: 'none', sm: 'flex' } }}
                   >
